@@ -31,7 +31,7 @@ fun RegisterScreen(
     // ✅ Gunakan ViewModel
     val viewModel: RegisterViewModel = viewModel()
 
-    // ✅ Ambil state dari ViewModel
+    // ✅ Ambil state dari ViewModel (termasuk error lokal)
     val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
     val email by viewModel.email.collectAsState()
@@ -39,6 +39,11 @@ fun RegisterScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val successMessage by viewModel.successMessage.collectAsState()
+    // ✅ Ambil error lokal
+    val usernameError by viewModel.usernameError.collectAsState()
+    val noHpError by viewModel.noHpError.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
 
     Column(
         modifier = Modifier
@@ -113,7 +118,19 @@ fun RegisterScreen(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = usernameError != null, // ✅ Tandai error
+                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                    if (usernameError != null) {
+                        Text(
+                            text = usernameError!!,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    // Jika tidak ada error, supportingText tetap perlu ada, bisa kosong
+                    // Tapi karena kita hanya ingin tampilkan saat error, kita biarkan 'if' saja
+                    // Jika ingin placeholder saat tidak error, tambahkan else {}
+                }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -135,7 +152,16 @@ fun RegisterScreen(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = noHpError != null, // ✅ Tandai error
+                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                    if (noHpError != null) {
+                        Text(
+                            text = noHpError!!,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -157,7 +183,16 @@ fun RegisterScreen(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = emailError != null, // ✅ Tandai error
+                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                    if (emailError != null) {
+                        Text(
+                            text = emailError!!,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -179,7 +214,16 @@ fun RegisterScreen(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = passwordError != null, // ✅ Tandai error
+                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                    if (passwordError != null) {
+                        Text(
+                            text = passwordError!!,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(Modifier.height(16.dp))
@@ -207,7 +251,7 @@ fun RegisterScreen(
                 }
             }
 
-            // ✅ Tampilkan pesan error (dari ViewModel)
+            // ✅ Tampilkan pesan error GLOBAL (dari ViewModel - backend, jaringan)
             errorMessage?.let {
                 Spacer(Modifier.height(8.dp))
                 Text(it, color = MaterialTheme.colorScheme.error)
@@ -222,11 +266,11 @@ fun RegisterScreen(
             Spacer(Modifier.height(8.dp))
 
             // Tombol balik ke login
-            TextButton(
+            TextButton( // ✅ Pastikan struktur ini benar
                 onClick = onBackClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Back to login", color = ColorCustom.link)
+                Text("Back to login", color = ColorCustom.link) // 'content' untuk TextButton adalah composable di dalam {}
             }
         }
     }

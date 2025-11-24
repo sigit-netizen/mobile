@@ -1,7 +1,9 @@
 package com.gantenginapp.apps.ui.screen.home
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -48,9 +50,17 @@ class HomeActivity : ComponentActivity() {
 
             HomeScreen(
                 onProfileClick = {
-                    // ✅ Arahkan ke ProfileActivity
-                    val intent = Intent(this@HomeActivity, ProfileActivity::class.java)
-                    startActivity(intent)
+                    // ✅ Ambil userId dari SharedPreferences dan kirim ke ProfileActivity
+                    val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                    val userId = sharedPref.getInt("user_id", -1)
+                    if (userId != -1) {
+                        val intent = Intent(this@HomeActivity, ProfileActivity::class.java).apply {
+                            putExtra("USER_ID", userId)
+                        }
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "User tidak ditemukan", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onDetailClick = {
                     // Contoh: navigasi ke DetailScreen

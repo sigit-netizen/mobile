@@ -4,7 +4,9 @@ package com.gantenginapp.apps.data.dto
 data class User(
     val id: Int,
     val username: String,
-    val noHP: String,
+    // Jangan sertakan password di sini, karena tidak dikirim dari API
+    val role: String,
     val email: String,
-    val role: String
+    val noHP: String
+    // Tambahkan field lain jika ada di tabel user
 )

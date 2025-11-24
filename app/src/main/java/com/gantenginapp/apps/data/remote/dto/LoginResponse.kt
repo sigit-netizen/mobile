@@ -1,9 +1,12 @@
+// File: app/src/main/java/com/gantenginapp/apps/data/dto/LoginResponse.kt
 package com.gantenginapp.apps.data.dto
 
-import com.gantenginapp.apps.domain.model.User
+import com.google.gson.annotations.SerializedName
 
 data class LoginResponse(
     val status: Boolean,
-    val message: String,
-    val data: User?
+    @SerializedName("data")
+    val user: User?,
+    val message: String? = null,
+    val token: String? = null
 )

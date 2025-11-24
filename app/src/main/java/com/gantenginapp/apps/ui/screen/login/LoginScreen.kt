@@ -1,3 +1,4 @@
+// File: app/src/main/java/com/gantenginapp/apps/ui/screen/login/LoginScreen.kt
 package com.gantenginapp.apps.ui.screen.login
 
 import androidx.compose.foundation.Image
@@ -31,10 +32,15 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val successMessage by viewModel.successMessage.collectAsState()
+    // ✅ Ambil error validasi lokal dari ViewModel
+    val usernameLocalError by viewModel.usernameLocalError.collectAsState()
+    val passwordLocalError by viewModel.passwordLocalError.collectAsState()
 
     LoginScreenContent(
         username = username,
         password = password,
+        usernameLocalError = usernameLocalError, // ✅ Kirim error ke content
+        passwordLocalError = passwordLocalError, // ✅ Kirim error ke content
         errorMessage = errorMessage,
         successMessage = successMessage,
         isLoading = isLoading,
@@ -60,6 +66,8 @@ fun LoginScreen(
 fun LoginScreenContent(
     username: String,
     password: String,
+    usernameLocalError: String?, // ✅ Terima error validasi lokal
+    passwordLocalError: String?, // ✅ Terima error validasi lokal
     errorMessage: String?,
     successMessage: String?,
     isLoading: Boolean,
@@ -143,7 +151,16 @@ fun LoginScreenContent(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = usernameLocalError != null, // ✅ Tandai error jika ada error validasi lokal (kosong atau dari API)
+                supportingText = { // ✅ Tampilkan pesan error validasi lokal
+                    if (usernameLocalError != null) {
+                        Text(
+                            text = usernameLocalError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -164,10 +181,32 @@ fun LoginScreenContent(
                     unfocusedLabelColor = ColorCustom.black,
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
-                )
+                ),
+                isError = passwordLocalError != null, // ✅ Tandai error jika ada error validasi lokal (kosong atau dari API)
+                supportingText = { // ✅ Tampilkan pesan error validasi lokal
+                    if (passwordLocalError != null) {
+                        Text(
+                            text = passwordLocalError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
+
+            // ✅ Tampilkan pesan error GLOBAL (dari ViewModel - validasi lokal gagal, atau error umum dari API/jaringan)
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodySmall // Gunakan style kecil agar tidak terlalu dominan
+                )
+                Spacer(Modifier.height(4.dp)) // Sedikit jarak setelah pesan error
+            }
+
+            Spacer(Modifier.height(8.dp))
 
             Button(
                 onClick = onLoginClick,
@@ -182,12 +221,6 @@ fun LoginScreenContent(
                 } else {
                     Text("Login")
                 }
-            }
-
-            // ✅ Tampilkan pesan error
-            errorMessage?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
             }
 
             // ✅ Tampilkan pesan sukses

@@ -4,13 +4,26 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.gantenginapp.apps.ui.screen.home.HomeActivity // ✅ Ganti ke HomeActivity
+import com.gantenginapp.apps.data.remote.ApiService
+import com.gantenginapp.apps.data.remote.RetrofitClient // ✅ Import RetrofitClient
+import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
+import com.gantenginapp.apps.ui.screen.home.HomeActivity
 import com.gantenginapp.apps.ui.screen.register.RegisterActivity
-import com.gantenginapp.apps.R
+import com.gantenginapp.apps.R // ✅ Tambahkan ini agar bisa mengakses R.anim
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Ambil ApiService dari RetrofitClient.instance
+        val apiService: ApiService = RetrofitClient.instance
+
+        // ✅ Buat instance AuthRepositoryImpl dengan ApiService dari RetrofitClient
+        val authRepository = AuthRepositoryImpl(apiService)
+
+        // ✅ Buat instance LoginViewModel
+        val loginViewModel = LoginViewModel(authRepository, this) // Kirim context
+
         setContent {
             LoginScreen(
                 onLoginSuccess = {
@@ -29,7 +42,8 @@ class LoginActivity : ComponentActivity() {
                 onBackClick = {
                     // ✅ Keluar dari aplikasi sepenuhnya
                     finishAffinity() // Menutup semua activity dalam task ini
-                }
+                },
+                viewModel = loginViewModel // Gunakan instance yang sudah dibuat
             )
         }
     }

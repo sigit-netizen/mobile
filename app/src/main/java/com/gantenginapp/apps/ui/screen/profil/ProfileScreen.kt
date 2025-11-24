@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,12 +27,34 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun ProfileScreen(
+    userId: Int,
     onBackClick: () -> Unit,
     onRegistStoreClick: () -> Unit,
     onEditProfileClick: () -> Unit,
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel() // ✅ Gunakan instance dari parameter
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    // Panggil fetch data saat userId berubah
+    LaunchedEffect(userId) {
+        viewModel.fetchUserProfile(userId)
+    }
+
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (error != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = "Error: $error", color = Color.Red)
+        }
+        return
+    }
 
     Surface(
         modifier = Modifier
@@ -91,14 +112,10 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Info boxes
-            ProfileItem(icon = Icons.Default.Person, text = userProfile.username)
-            ProfileItem(icon = Icons.Default.Phone, text = userProfile.phone)
-            ProfileItem(icon = Icons.Default.Email, text = userProfile.email)
-
-            // 🔒 Tampilkan password hanya untuk debugging (opsional)
-            if (userProfile.password.isNotEmpty()) {
-                ProfileItem(icon = Icons.Default.Lock, text = "Password: ${userProfile.password}")
-            }
+            ProfileItem(icon = Icons.Default.Person, text = userProfile.username.takeIf { it.isNotEmpty() } ?: "-")
+            ProfileItem(icon = Icons.Default.Phone, text = userProfile.phone.takeIf { it.isNotEmpty() } ?: "-")
+            ProfileItem(icon = Icons.Default.Email, text = userProfile.email.takeIf { it.isNotEmpty() } ?: "-")
+            ProfileItem(icon = Icons.Default.VerifiedUser, text = userProfile.role.takeIf { it.isNotEmpty() } ?: "-")
         }
     }
 }
@@ -136,6 +153,7 @@ fun ProfileItem(icon: ImageVector, text: String) {
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
+        userId = 1,
         onBackClick = {},
         onRegistStoreClick = {},
         onEditProfileClick = {}

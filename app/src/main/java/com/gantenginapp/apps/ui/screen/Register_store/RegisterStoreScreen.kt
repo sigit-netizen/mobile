@@ -100,7 +100,7 @@ fun RegisterStoreScreen(
             TextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Username") },
+                label = { Text("Nama Toko") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
@@ -118,27 +118,6 @@ fun RegisterStoreScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // No Hp
-            TextField(
-                value = noHp,
-                onValueChange = { noHp = it },
-                label = { Text("NoHp") },
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = ColorCustom.black,
-                    unfocusedTextColor = ColorCustom.black,
-                    cursorColor = ColorCustom.black,
-                    focusedIndicatorColor = ColorCustom.black,
-                    unfocusedIndicatorColor = ColorCustom.black,
-                    focusedLabelColor = ColorCustom.black,
-                    unfocusedLabelColor = ColorCustom.black,
-                    unfocusedContainerColor = ColorCustom.bg,
-                    focusedContainerColor = ColorCustom.bg,
-                )
-            )
-
-            Spacer(Modifier.height(8.dp))
 
             // Alamat Toko
             TextField(
@@ -161,46 +140,6 @@ fun RegisterStoreScreen(
             )
 
             Spacer(Modifier.height(8.dp))
-
-            // ✅ Password (dengan ikon mata)
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = ColorCustom.black,
-                    unfocusedTextColor = ColorCustom.black,
-                    cursorColor = ColorCustom.black,
-                    focusedIndicatorColor = ColorCustom.black,
-                    unfocusedIndicatorColor = ColorCustom.black,
-                    focusedLabelColor = ColorCustom.black,
-                    unfocusedLabelColor = ColorCustom.black,
-                    unfocusedContainerColor = ColorCustom.bg,
-                    focusedContainerColor = ColorCustom.bg,
-                ),
-                visualTransformation = if (passwordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                trailingIcon = {
-                    val image = if (passwordVisible) {
-                        Icons.Default.Visibility
-                    } else {
-                        Icons.Default.VisibilityOff
-                    }
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = image,
-                            contentDescription = "Toggle password visibility"
-                        )
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(16.dp))
 
             // Tombol Register
             Button(

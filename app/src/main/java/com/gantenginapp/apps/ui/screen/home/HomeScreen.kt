@@ -26,10 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.TextFieldDefaults
+import com.gantenginapp.apps.ui.screen.aiPage.AiPageViewModel
+import com.gantenginapp.apps.ui.screen.aiPage.AiPageScreen
+import androidx.activity.compose.BackHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +43,9 @@ fun HomeScreen(
     onConfirmRegisterStore: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
+    // ambil AI ViewModel explicit supaya tidak kebingungan dengan HomeViewModel
+    val aiViewModel: AiPageViewModel = viewModel()
+
     val username by viewModel.username.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val stores by viewModel.filteredStores.collectAsState()
@@ -51,6 +53,7 @@ fun HomeScreen(
     val showLogoutDialog by viewModel.showLogoutDialog.collectAsState()
 
     HomeContent(
+        viewModel = aiViewModel,
         username = username,
         isLoading = isLoading,
         stores = stores,
@@ -69,9 +72,11 @@ fun HomeScreen(
     )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    viewModel: AiPageViewModel,
     username: String,
     isLoading: Boolean,
     stores: List<StoreItem>,
@@ -89,26 +94,33 @@ fun HomeContent(
     onConfirmRegisterStore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+
     var isSearchActive by remember { mutableStateOf(false) }
-    var selectedMenu by remember { mutableStateOf("home")}
+    var selectedMenu by remember { mutableStateOf("home") }
+
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = onDismissLogoutDialog,
             title = { Text("Konfirmasi Logout") },
             text = { Text("Apakah Anda yakin ingin logout?") },
             confirmButton = {
-                TextButton(onClick = onConfirmLogout) {
-                    Text("Ya")
-                }
+                TextButton(onClick = onConfirmLogout) { Text("Ya") }
             },
             dismissButton = {
-                TextButton(onClick = onDismissLogoutDialog) {
-                    Text("Tidak")
-                }
+                TextButton(onClick = onDismissLogoutDialog) { Text("Tidak") }
             }
         )
     }
+    BackHandler {
+        if (selectedMenu != "home") {
+            selectedMenu = "home"
+        } else {
+            // BACK bawaan Android (keluar)
+            onLogoutClick() // atau biarkan default jika tidak ingin logout
+        }
+    }
+
+
 
     if (showRegisterConfirmation) {
         AlertDialog(
@@ -116,173 +128,138 @@ fun HomeContent(
             title = { Text("Konfirmasi Daftar Toko") },
             text = { Text("Anda belum memiliki toko. Apakah Anda ingin mendaftarkan toko?") },
             confirmButton = {
-                TextButton(onClick = onConfirmRegisterStore) {
-                    Text("Ya")
-                }
+                TextButton(onClick = onConfirmRegisterStore) { Text("Ya") }
             },
             dismissButton = {
-                TextButton(onClick = onDismissRegisterConfirmation) {
-                    Text("Tidak")
-                }
+                TextButton(onClick = onDismissRegisterConfirmation) { Text("Tidak") }
             }
         )
     }
-
-
-
     Scaffold(
         containerColor = Color.White,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        // ✅ Logo: ubah jadi 40.dp agar sejajar
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_toko),
-                            contentDescription = "App logo",
-                            modifier = Modifier
-                                .padding(start = 2.dp)
-                                .size(40.dp) // 🔸 Dari 30.dp → 40.dp
-                                .clip(CircleShape)
-                                .clickable { onRegisterClick() }
-                        )
-
-                        // ✅ SearchBar yang diperbaiki
-                        SearchBar(
-                            query = searchQuery,
-                            onQueryChange = {
-                                onSearchQueryChange(it)
-                                if (!isSearchActive && it.isNotBlank()) {
-                                    isSearchActive = true
-                                }
-                            },
-                            onSearch = { query ->
-                                onSearchQueryChange(query)
-                                isSearchActive = false
-                            },
-                            active = isSearchActive,
-                            onActiveChange = { isSearchActive = it },
-                            modifier = Modifier
-                                .height(250.dp)
-                                .width(250.dp) // 🔸 Ganti dari fillMaxWidth ke lebar tetap
-                                .clip(RoundedCornerShape(50.dp)),
-                            placeholder = {
-                                Text(
-                                    "Cari toko...",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontSize = 14.sp, // 🔸 Naikkan dari 10.sp → 14.sp
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                    )
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(25.dp)
-                                )
-                            },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(
-                                        onClick = { onSearchQueryChange("") },
-                                        modifier = Modifier.size(28.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = "Clear search",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            CompositionLocalProvider(
-                                LocalTextStyle provides MaterialTheme.typography.bodyMedium.copy(
-                                    fontSize = 10.sp // 🔸 Sama dengan placeholder
-                                )
+            when(selectedMenu) {
+                "home" -> {
+                    TopAppBar(
+                        title = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                // Kosong
-                            }
-                        }
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_toko),
+                                    contentDescription = "App logo",
+                                    modifier = Modifier
+                                        .padding(start = 2.dp)
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .clickable { onRegisterClick() }
+                                )
 
-                        // ✅ Profil: ubah jadi 40.dp agar sejajar
-                        Box(
-                            modifier = Modifier
-                                .padding(end = 15.dp)
-                                .size(40.dp) // 🔸 Dari 30.dp → 40.dp
-                                .clip(CircleShape)
-                                .clickable { onProfileClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_profil),
-                                contentDescription = "Profile Picture",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
+                                // SearchBar (sederhana)
+                                SearchBar(
+                                    query = searchQuery,
+                                    onQueryChange = {
+                                        onSearchQueryChange(it)
+                                        if (!isSearchActive && it.isNotBlank()) isSearchActive = true
+                                    },
+                                    onSearch = { q ->
+                                        onSearchQueryChange(q)
+                                        isSearchActive = false
+                                    },
+                                    active = isSearchActive,
+                                    onActiveChange = { isSearchActive = it },
+                                    modifier = Modifier
+                                        .height(250.dp)
+                                        .width(250.dp)
+                                        .clip(RoundedCornerShape(50.dp)),
+                                    placeholder = {
+                                        Text(
+                                            "Cari toko...",
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontSize = 14.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                            )
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(imageVector = Icons.Default.Search, contentDescription = null, modifier = Modifier.size(25.dp))
+                                    },
+                                    trailingIcon = {
+                                        if (searchQuery.isNotEmpty()) {
+                                            IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(28.dp)) {
+                                                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", modifier = Modifier.size(16.dp))
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    // kosong
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 15.dp)
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .clickable { onProfileClick() },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_profil),
+                                        contentDescription = "Profile Picture",
+                                        modifier = Modifier.size(30.dp).clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                    )
+
+                }
+                "ai" -> {
+                    CenterAlignedTopAppBar(
+                        title = { Text("StyleCut Ai", fontSize = 18.sp) },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color.White,
+                            titleContentColor = Color.Black,
+                            navigationIconContentColor = Color.Black,
+                            actionIconContentColor = Color.Black
+                        ),
+                        modifier = Modifier
+                            .background(Color.White)
+                            .statusBarsPadding(),
+
+                    )
+                }
+
+
+            }
+
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ) {
+            NavigationBar(containerColor = Color.White, contentColor = Color.Black) {
                 NavigationBarItem(
                     selected = selectedMenu == "home",
                     onClick = { selectedMenu = "home" },
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Blue,          // warna icon saat aktif
-                        unselectedIconColor = Color.Gray,        // warna icon saat nonaktif
-                        selectedTextColor = Color.Blue,          // warna label saat aktif
-                        unselectedTextColor = Color.Gray,        // warna label saat nonaktif
-                        indicatorColor = Color(0xFFE0E0E0)       // warna background bubble saat aktif
-                    )
+                    label = { Text("Home") }
                 )
                 NavigationBarItem(
-                    selected = selectedMenu == "store",
-                    onClick = { selectedMenu = "store" },
-                    icon = { Icon(Icons.Default.Adb, contentDescription = "Toko") },
-                    label = { Text("Toko") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Blue,          // warna icon saat aktif
-                        unselectedIconColor = Color.Gray,        // warna icon saat nonaktif
-                        selectedTextColor = Color.Blue,          // warna label saat aktif
-                        unselectedTextColor = Color.Gray,        // warna label saat nonaktif
-                        indicatorColor = Color(0xFFE0E0E0)       // warna background bubble saat aktif
-                    )
+                    selected = selectedMenu == "ai",
+                    onClick = { selectedMenu = "ai" },
+                    icon = { Icon(Icons.Default.Adb, contentDescription = "AI") },
+                    label = { Text("StyleCut Ai") }
                 )
-                }
             }
+        }
     ) { innerPadding ->
-
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             when (selectedMenu) {
-
                 "home" -> {
-                    // Halaman Home
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White),
+                        modifier = Modifier.fillMaxSize().background(Color.White),
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -298,33 +275,22 @@ fun HomeContent(
                     }
                 }
 
-                "store" -> {
-                    // Halaman Store / AI
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Halaman AI",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(onClick = onRegisterClick) {
-                            Text("Daftar Toko")
-                        }
-                    }
+                "ai" -> {
+                    AiPageScreen(
+                        messages = viewModel.messages,
+                        inputText = viewModel.inputText,
+                        isAiThinking = viewModel.isAiThinking,
+                        onInputChanged = viewModel::onInputChanged,
+                        onSendClicked = viewModel::onSendClicked,
+                        onMessageLongPress = { /* optional */ }
+                    )
                 }
             }
         }
     }
-
 }
 
+/** Card placeholder di bawah supaya jelas scoping-nya */
 @Composable
 fun HorizontalCardPlaceholder(
     storeName: String,
@@ -334,39 +300,18 @@ fun HorizontalCardPlaceholder(
     onDetailClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(Color.DarkGray.copy(alpha = 0.4f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Store,
-                    contentDescription = "Store icon",
-                    tint = Color.White.copy(alpha = 0.6f),
-                    modifier = Modifier.size(32.dp)
-                )
+        Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(Color.DarkGray.copy(alpha = 0.4f)), contentAlignment = Alignment.Center) {
+                Icon(imageVector = Icons.Default.Store, contentDescription = "Store icon", tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(32.dp))
             }
+
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(text = storeName, style = MaterialTheme.typography.titleMedium)
                     when (status) {
                         "penuh" -> Text("Penuh", color = Color.Red, fontWeight = FontWeight.Bold)
@@ -374,74 +319,16 @@ fun HorizontalCardPlaceholder(
                         else -> Text("- 3 orang", color = Color.Gray)
                     }
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(text = price)
-                    Button(
-                        onClick = onDetailClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.DarkGray,
-                            contentColor = Color.White
-                        )
-                    ) {
+                    Button(onClick = onDetailClick, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray, contentColor = Color.White)) {
                         Text("Cek Detail")
                     }
                 }
+
                 Text(text = address, color = Color.Gray, fontSize = 12.sp)
             }
         }
     }
-}
-
-// Preview 1: Home dengan data toko
-@Preview(showBackground = true, showSystemUi = true, name = "Home - Normal")
-@Composable
-fun HomeContentWithThreePeoplePreview() {
-    HomeContent(
-        username = "Ananda",
-        isLoading = false,
-        stores = listOf(
-            StoreItem(1, "Barber Ananda", "Jl. Merdeka", "Rp.10000", "tersedia")
-        ),
-        searchQuery = "",
-        onSearchQueryChange = {},
-        onProfileClick = {},
-        onDetailClick = {},
-        onLogoutClick = {},
-        onRegisterClick = {},
-        showLogoutDialog = false,
-        onDismissLogoutDialog = {},
-        onConfirmLogout = {},
-        showRegisterConfirmation = false,
-        onDismissRegisterConfirmation = {},
-        onConfirmRegisterStore = {}
-    )
-}
-
-// Preview 2: Toko penuh
-@Preview(showBackground = true, showSystemUi = true, name = "Home - Penuh")
-@Composable
-fun HomeContentWithFullPreview() {
-    HorizontalCardPlaceholder(
-        storeName = "Barber Full",
-        address = "Jl. Penuh",
-        price = "Rp.15000",
-        status = "penuh",
-        onDetailClick = {}
-    )
-}
-
-// Preview 3: Toko tutup
-@Preview(showBackground = true, showSystemUi = true, name = "Home - Tutup")
-@Composable
-fun HomeContentWithClosedPreview() {
-    HorizontalCardPlaceholder(
-        storeName = "Barber Tutup",
-        address = "Jl. Libur",
-        price = "Rp.0",
-        status = "tutup",
-        onDetailClick = {}
-    )
 }

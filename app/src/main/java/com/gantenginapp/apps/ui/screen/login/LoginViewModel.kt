@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gantenginapp.apps.data.dto.LoginRequest
-import com.gantenginapp.apps.data.dto.LoginResponse
 import com.gantenginapp.apps.data.dto.UserResponse
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow

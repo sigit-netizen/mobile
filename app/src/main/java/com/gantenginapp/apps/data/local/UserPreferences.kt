@@ -23,4 +23,27 @@ class UserPreferences(private val context: Context) {
     // SAVE FULL USER
     suspend fun saveUser(user: User) {
         context.dataStore.edit { prefs ->
-            prefs[USER_ID] = user.id ?: "_]()
+            prefs[USER_ID] = user.id ?: ""
+            prefs[USER_NAME] = user.username ?: ""
+            prefs[USER_EMAIL] = user.email ?: ""
+            prefs[USER_NO_HP] = user.noHp ?: ""
+            prefs[USER_ROLE] = user.role ?: ""
+        }
+    }
+
+    // READ USER AS FLOW<User>
+    val user: Flow<User> = context.dataStore.data.map { prefs ->
+        User(
+            id = prefs[USER_ID] ?: "",
+            username = prefs[USER_NAME] ?: "",
+            email = prefs[USER_EMAIL] ?: "",
+            noHp = prefs[USER_NO_HP] ?: "",
+            role = prefs[USER_ROLE] ?: ""
+        )
+    }
+
+    // CLEAR USER
+    suspend fun clearUser() {
+        context.dataStore.edit { it.clear() }
+    }
+}

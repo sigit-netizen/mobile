@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.TextFieldDefaults
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -91,7 +90,8 @@ fun HomeContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
+    var isSearchActive by remember { mutableStateOf(false) }
+    var selectedMenu by remember { mutableStateOf("home")}
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = onDismissLogoutDialog,
@@ -128,7 +128,7 @@ fun HomeContent(
         )
     }
 
-    var isSearchActive by remember { mutableStateOf(false) }
+
 
     Scaffold(
         containerColor = Color.White,
@@ -235,35 +235,94 @@ fun HomeContent(
             )
         },
         bottomBar = {
-            BottomAppBar(
-                modifier = Modifier.background(Color.White),
+            NavigationBar(
                 containerColor = Color.White,
-                contentColor = Color.Black,
-                tonalElevation = 4.dp
+                contentColor = Color.Black
             ) {
-                Text("Copyright © 2023 Gantengin App")
+                NavigationBarItem(
+                    selected = selectedMenu == "home",
+                    onClick = { selectedMenu = "home" },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Blue,          // warna icon saat aktif
+                        unselectedIconColor = Color.Gray,        // warna icon saat nonaktif
+                        selectedTextColor = Color.Blue,          // warna label saat aktif
+                        unselectedTextColor = Color.Gray,        // warna label saat nonaktif
+                        indicatorColor = Color(0xFFE0E0E0)       // warna background bubble saat aktif
+                    )
+                )
+                NavigationBarItem(
+                    selected = selectedMenu == "store",
+                    onClick = { selectedMenu = "store" },
+                    icon = { Icon(Icons.Default.Adb, contentDescription = "Toko") },
+                    label = { Text("Toko") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Blue,          // warna icon saat aktif
+                        unselectedIconColor = Color.Gray,        // warna icon saat nonaktif
+                        selectedTextColor = Color.Blue,          // warna label saat aktif
+                        unselectedTextColor = Color.Gray,        // warna label saat nonaktif
+                        indicatorColor = Color(0xFFE0E0E0)       // warna background bubble saat aktif
+                    )
+                )
+                }
             }
-        },
     ) { innerPadding ->
-        LazyColumn(
+
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color.White),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(stores) { store ->
-                HorizontalCardPlaceholder(
-                    storeName = store.name,
-                    address = store.address,
-                    price = store.price,
-                    status = store.status,
-                    onDetailClick = onDetailClick
-                )
+
+            when (selectedMenu) {
+
+                "home" -> {
+                    // Halaman Home
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        items(stores) { store ->
+                            HorizontalCardPlaceholder(
+                                storeName = store.name,
+                                address = store.address,
+                                price = store.price,
+                                status = store.status,
+                                onDetailClick = onDetailClick
+                            )
+                        }
+                    }
+                }
+
+                "store" -> {
+                    // Halaman Store / AI
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Halaman AI",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(onClick = onRegisterClick) {
+                            Text("Daftar Toko")
+                        }
+                    }
+                }
             }
         }
     }
+
 }
 
 @Composable

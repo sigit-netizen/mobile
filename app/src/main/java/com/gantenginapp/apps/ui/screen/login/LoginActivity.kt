@@ -7,9 +7,9 @@ import androidx.activity.compose.setContent
 import com.gantenginapp.apps.data.remote.ApiService
 import com.gantenginapp.apps.data.remote.RetrofitClient // ✅ Import RetrofitClient
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
-import com.gantenginapp.apps.ui.screen.home.HomeActivity
 import com.gantenginapp.apps.ui.screen.register.RegisterActivity
 import com.gantenginapp.apps.R // ✅ Tambahkan ini agar bisa mengakses R.anim
+import com.gantenginapp.apps.ui.screen.home.HomeActivity
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -2,15 +2,14 @@ package com.gantenginapp.apps.ui.screen.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,14 +19,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
-import com.gantenginapp.apps.ui.screen.profil.ProfileActivity
-import android.content.Intent
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.TextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,26 +38,34 @@ fun HomeScreen(
     onDetailClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    showLogoutDialog: Boolean,
-    onDismissLogoutDialog: () -> Unit,
     onConfirmLogout: () -> Unit,
+    showRegisterConfirmation: Boolean,
+    onDismissRegisterConfirmation: () -> Unit,
+    onConfirmRegisterStore: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val username by viewModel.username.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val data by viewModel.data.collectAsState()
+    val stores by viewModel.filteredStores.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val showLogoutDialog by viewModel.showLogoutDialog.collectAsState()
 
     HomeContent(
         username = username,
         isLoading = isLoading,
-        data = data, // ✅ Fix: parameter 'data' sudah didefinisikan
+        stores = stores,
+        searchQuery = searchQuery,
+        onSearchQueryChange = viewModel::onSearchQueryChanged,
         onProfileClick = onProfileClick,
         onDetailClick = onDetailClick,
         onLogoutClick = onLogoutClick,
         onRegisterClick = onRegisterClick,
         showLogoutDialog = showLogoutDialog,
-        onDismissLogoutDialog = onDismissLogoutDialog,
-        onConfirmLogout = onConfirmLogout
+        onDismissLogoutDialog = viewModel::dismissLogoutDialog,
+        onConfirmLogout = onConfirmLogout,
+        showRegisterConfirmation = showRegisterConfirmation,
+        onDismissRegisterConfirmation = onDismissRegisterConfirmation,
+        onConfirmRegisterStore = onConfirmRegisterStore
     )
 }
 
@@ -64,106 +74,165 @@ fun HomeScreen(
 fun HomeContent(
     username: String,
     isLoading: Boolean,
-    data: List<String>, // ✅ Fix: Tambahkan tipe data
+    stores: List<StoreItem>,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onProfileClick: () -> Unit,
     onDetailClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onRegisterClick: () -> Unit,
     showLogoutDialog: Boolean,
     onDismissLogoutDialog: () -> Unit,
-    onConfirmLogout: () -> Unit
+    onConfirmLogout: () -> Unit,
+    showRegisterConfirmation: Boolean,
+    onDismissRegisterConfirmation: () -> Unit,
+    onConfirmRegisterStore: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
 
-    // ✅ Tampilkan dialog logout
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = onDismissLogoutDialog,
             title = { Text("Konfirmasi Logout") },
             text = { Text("Apakah Anda yakin ingin logout?") },
             confirmButton = {
-                Button(onClick = onConfirmLogout) {
+                TextButton(onClick = onConfirmLogout) {
                     Text("Ya")
                 }
             },
             dismissButton = {
-                Button(onClick = onDismissLogoutDialog) {
+                TextButton(onClick = onDismissLogoutDialog) {
                     Text("Tidak")
                 }
             }
         )
     }
 
+    if (showRegisterConfirmation) {
+        AlertDialog(
+            onDismissRequest = onDismissRegisterConfirmation,
+            title = { Text("Konfirmasi Daftar Toko") },
+            text = { Text("Anda belum memiliki toko. Apakah Anda ingin mendaftarkan toko?") },
+            confirmButton = {
+                TextButton(onClick = onConfirmRegisterStore) {
+                    Text("Ya")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissRegisterConfirmation) {
+                    Text("Tidak")
+                }
+            }
+        )
+    }
+
+    var isSearchActive by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = Color.White,
-        // Header
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.background(Color.White),
+            TopAppBar(
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        // ✅ Logo: ubah jadi 40.dp agar sejajar
                         Image(
-                            painter = painterResource(id = R.drawable.gantengin),
+                            painter = painterResource(id = R.drawable.ic_toko),
                             contentDescription = "App logo",
                             modifier = Modifier
-                                .size(50.dp)
+                                .padding(start = 2.dp)
+                                .size(40.dp) // 🔸 Dari 30.dp → 40.dp
                                 .clip(CircleShape)
-//                                .border(1.dp, Color.Gray, CircleShape)
-                                .height(40.dp)
+                                .clickable { onRegisterClick() }
                         )
 
-                        TextField(
-                            value = "",
-                            onValueChange = { /* Handle value change */ },
-                            label = { Text(text = "Cari toko....", fontSize = 12.sp) }, // Sesuaikan ukuran label
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        // ✅ SearchBar yang diperbaiki
+                        SearchBar(
+                            query = searchQuery,
+                            onQueryChange = {
+                                onSearchQueryChange(it)
+                                if (!isSearchActive && it.isNotBlank()) {
+                                    isSearchActive = true
+                                }
+                            },
+                            onSearch = { query ->
+                                onSearchQueryChange(query)
+                                isSearchActive = false
+                            },
+                            active = isSearchActive,
+                            onActiveChange = { isSearchActive = it },
                             modifier = Modifier
-                                .width(250.dp)
-                                .heightIn(min = 40.dp), // Minimal 40.dp agar tetap bisa diklik
-                            shape = RoundedCornerShape(30.dp),
-                            textStyle = TextStyle(fontSize = 20.sp), // ✅ Fix: Gunakan TextStyle
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color.Transparent,   // Hilangkan garis bawah
-                                unfocusedIndicatorColor = Color.Transparent, // Hilangkan garis bawah
-                                disabledIndicatorColor = Color.Transparent   // Hilangkan garis bawah
-                            )
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-//                                .background(Color.DarkGray.copy(alpha = 0.4f))
-                                .clickable {
-                                    onProfileClick() // ✅ Panggil fungsi onProfileClick
-                                },
-                            contentAlignment = Alignment.Center
+                                .height(250.dp)
+                                .width(250.dp) // 🔸 Ganti dari fillMaxWidth ke lebar tetap
+                                .clip(RoundedCornerShape(50.dp)),
+                            placeholder = {
+                                Text(
+                                    "Cari toko...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp, // 🔸 Naikkan dari 10.sp → 14.sp
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { onSearchQueryChange("") },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Clear search",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                }
+                            }
                         ) {
-                            // Ganti Icon menjadi Image
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_profil), // Ganti dengan nama gambar kamu
-                                contentDescription = "Profile Picture",
-                                modifier = Modifier
-                                    .size(24.dp) // Sesuaikan ukuran gambar
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop // Agar gambar tidak terdistorsi
-                            )
+                            CompositionLocalProvider(
+                                LocalTextStyle provides MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 10.sp // 🔸 Sama dengan placeholder
+                                )
+                            ) {
+                                // Kosong
+                            }
                         }
 
-                        // ❌ Tombol Logout dihapus dari sini
+                        // ✅ Profil: ubah jadi 40.dp agar sejajar
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 15.dp)
+                                .size(40.dp) // 🔸 Dari 30.dp → 40.dp
+                                .clip(CircleShape)
+                                .clickable { onProfileClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_profil),
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        // Footer
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier.background(Color.White),
@@ -174,12 +243,6 @@ fun HomeContent(
                 Text("Copyright © 2023 Gantengin App")
             }
         },
-        // FAB
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* Handle FAB click */ }) {
-                Text("+")
-            }
-        }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -189,8 +252,12 @@ fun HomeContent(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(data.size) { index ->
+            items(stores) { store ->
                 HorizontalCardPlaceholder(
+                    storeName = store.name,
+                    address = store.address,
+                    price = store.price,
+                    status = store.status,
                     onDetailClick = onDetailClick
                 )
             }
@@ -200,7 +267,11 @@ fun HomeContent(
 
 @Composable
 fun HorizontalCardPlaceholder(
-    onDetailClick: () -> Unit = {}
+    storeName: String,
+    address: String,
+    price: String,
+    status: String,
+    onDetailClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -208,9 +279,7 @@ fun HorizontalCardPlaceholder(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -226,40 +295,30 @@ fun HorizontalCardPlaceholder(
                     .background(Color.DarkGray.copy(alpha = 0.4f)),
                 contentAlignment = Alignment.Center
             ) {
-                // Ini Icon
                 Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Placeholder",
+                    imageVector = Icons.Default.Store,
+                    contentDescription = "Store icon",
                     tint = Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(32.dp)
                 )
             }
-            // Text Disebelah kanan
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Nama Toko",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "5/5",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
+                    Text(text = storeName, style = MaterialTheme.typography.titleMedium)
+                    when (status) {
+                        "penuh" -> Text("Penuh", color = Color.Red, fontWeight = FontWeight.Bold)
+                        "tutup" -> Text("Tutup", color = Color.Gray, fontWeight = FontWeight.Bold)
+                        else -> Text("- 3 orang", color = Color.Gray)
+                    }
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Rp.10000"
-                    )
-
+                    Text(text = price)
                     Button(
                         onClick = onDetailClick,
                         colors = ButtonDefaults.buttonColors(
@@ -267,28 +326,62 @@ fun HorizontalCardPlaceholder(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(text = "Cek Detail") // ✅ Fix: @Composable function
+                        Text("Cek Detail")
                     }
                 }
+                Text(text = address, color = Color.Gray, fontSize = 12.sp)
             }
         }
     }
 }
 
-// Main preview
-@Preview(showBackground = true, showSystemUi = true)
+// Preview 1: Home dengan data toko
+@Preview(showBackground = true, showSystemUi = true, name = "Home - Normal")
 @Composable
-fun HomeContentPreview() {
+fun HomeContentWithThreePeoplePreview() {
     HomeContent(
         username = "Ananda",
         isLoading = false,
-        data = listOf("Item 1", "Item 2"), // ✅ Fix: parameter 'data' diberikan
+        stores = listOf(
+            StoreItem(1, "Barber Ananda", "Jl. Merdeka", "Rp.10000", "tersedia")
+        ),
+        searchQuery = "",
+        onSearchQueryChange = {},
         onProfileClick = {},
         onDetailClick = {},
         onLogoutClick = {},
         onRegisterClick = {},
         showLogoutDialog = false,
         onDismissLogoutDialog = {},
-        onConfirmLogout = {}
+        onConfirmLogout = {},
+        showRegisterConfirmation = false,
+        onDismissRegisterConfirmation = {},
+        onConfirmRegisterStore = {}
+    )
+}
+
+// Preview 2: Toko penuh
+@Preview(showBackground = true, showSystemUi = true, name = "Home - Penuh")
+@Composable
+fun HomeContentWithFullPreview() {
+    HorizontalCardPlaceholder(
+        storeName = "Barber Full",
+        address = "Jl. Penuh",
+        price = "Rp.15000",
+        status = "penuh",
+        onDetailClick = {}
+    )
+}
+
+// Preview 3: Toko tutup
+@Preview(showBackground = true, showSystemUi = true, name = "Home - Tutup")
+@Composable
+fun HomeContentWithClosedPreview() {
+    HorizontalCardPlaceholder(
+        storeName = "Barber Tutup",
+        address = "Jl. Libur",
+        price = "Rp.0",
+        status = "tutup",
+        onDetailClick = {}
     )
 }

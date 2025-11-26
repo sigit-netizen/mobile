@@ -1,10 +1,10 @@
-// File: SplashScreen.kt
 package com.gantenginapp.apps.ui.screen.Splash
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -13,14 +13,20 @@ import androidx.compose.ui.unit.dp
 import com.gantenginapp.apps.R
 import com.gantenginapp.apps.ui.theme.ColorCustom
 import com.gantenginapp.apps.ui.theme.LearnAndroidDasarTheme
-import kotlinx.coroutines.delay
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState // ✅ TAMBAHKAN INI!
 
 @Composable
-fun SplashScreenContent(onTimeout: () -> Unit) {
-    LaunchedEffect(Unit) {
-        delay(2000L)
-        onTimeout()
+fun SplashScreen(
+    viewModel: SplashViewModel,
+    onNavigateToNext: () -> Unit
+) {
+    val navigateToNext by viewModel.navigateToNext.collectAsState() // ✅ Sekarang berfungsi
+
+    // Pantau perubahan state untuk navigasi
+    LaunchedEffect(navigateToNext) {
+        if (navigateToNext) {
+            onNavigateToNext()
+        }
     }
 
     SplashScreenUI()

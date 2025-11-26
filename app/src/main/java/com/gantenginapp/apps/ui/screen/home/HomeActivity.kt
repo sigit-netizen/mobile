@@ -1,12 +1,11 @@
 package com.gantenginapp.apps.ui.screen.home
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,14 +13,28 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.ui.screen.login.LoginActivity
 import com.gantenginapp.apps.ui.screen.profil.ProfileActivity
-import com.gantenginapp.apps.ui.screen.register.RegisterActivity
+import com.gantenginapp.apps.ui.screen.registerstore.RegisterStoreActivity
+import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreActivity// ✅ Ganti nama activity
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            // ✅ State untuk menampilkan dialog logout
+            // ✅ State untuk dialog logout
             var showLogoutDialog by remember { mutableStateOf(false) }
+            // ✅ State untuk dialog konfirmasi daftar toko
+            var showRegisterConfirmation by remember { mutableStateOf(false) }
+            // ✅ State untuk dialog logout saat back
+            var showBackLogoutDialog by remember { mutableStateOf(false) }
+
+            // ✅ Callback untuk tombol back
+            val backPressedCallback = object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    showBackLogoutDialog = true
+                }
+            }
+            onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
             // ✅ Fungsi untuk menampilkan dialog logout
             fun showLogoutConfirmation() {
@@ -37,21 +50,57 @@ class HomeActivity : ComponentActivity() {
             fun performLogout() {
                 val intent = Intent(this@HomeActivity, LoginActivity::class.java)
                 startActivity(intent)
-                finishAffinity() // Tutup semua activity kecuali login
+                finishAffinity()
             }
 
-            // ✅ Tangani tombol kembali
-            val backPressedCallback = object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    showLogoutConfirmation()
-                }
+            // ✅ Fungsi untuk menampilkan dialog konfirmasi daftar toko
+            fun showRegisterConfirmationDialog() {
+                showRegisterConfirmation = true
             }
-            onBackPressedDispatcher.addCallback(this, backPressedCallback)
+
+            // ✅ Fungsi untuk menutup dialog konfirmasi daftar toko
+            fun dismissRegisterConfirmation() {
+                showRegisterConfirmation = false
+            }
+
+            // ✅ Fungsi untuk buka RegisterStoreActivity
+            fun goToRegisterStore() {
+                showRegisterConfirmation = false // tutup dialog
+                val intent = Intent(this@HomeActivity, RegisterStoreActivity::class.java)
+                startActivity(intent)
+            }
+
+            // ✅ Dialog logout saat back
+            if (showBackLogoutDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showBackLogoutDialog = false },
+                    title = { androidx.compose.material3.Text("Konfirmasi Logout") },
+                    text = { androidx.compose.material3.Text("Apakah Anda yakin ingin logout?") },
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(
+                            onClick = {
+                                val intent = Intent(this@HomeActivity, LoginActivity::class.java)
+                                startActivity(intent)
+                                finishAffinity()
+                            }
+                        ) {
+                            androidx.compose.material3.Text("Ya")
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(
+                            onClick = { showBackLogoutDialog = false }
+                        ) {
+                            androidx.compose.material3.Text("Tidak")
+                        }
+                    }
+                )
+            }
+                val viewModel: HomeViewModel = viewModel()
 
             HomeScreen(
                 onProfileClick = {
-                    // ✅ Ambil userId dari SharedPreferences dan kirim ke ProfileActivity
-                    val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                    val sharedPref = getSharedPreferences("user_prefs", MODE_PRIVATE)
                     val userId = sharedPref.getInt("user_id", -1)
                     if (userId != -1) {
                         val intent = Intent(this@HomeActivity, ProfileActivity::class.java).apply {
@@ -63,18 +112,29 @@ class HomeActivity : ComponentActivity() {
                     }
                 },
                 onDetailClick = {
-                    // Contoh: navigasi ke DetailScreen
-                },
-                onLogoutClick = { performLogout() }, // Panggil fungsi logout
-                onRegisterClick = {
-                    // ✅ Buka RegisterActivity
-                    val intent = Intent(this@HomeActivity, RegisterActivity::class.java)
+                    val intent = Intent(this@HomeActivity, BarberStoreActivity::class.java)
                     startActivity(intent)
                 },
-                showLogoutDialog = showLogoutDialog, // ✅ Tambahkan parameter
-                onDismissLogoutDialog = { dismissLogoutDialog() }, // ✅ Tambahkan parameter
-                onConfirmLogout = { performLogout() }, // ✅ Tambahkan parameter
-                viewModel = viewModel() // ✅ Gunakan ViewModel
+                onLogoutClick = { viewModel.showLogoutDialog() }, // ✅ Sekarang panggil ViewModel
+                onRegisterClick = {
+                    val sharedPref = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                    val userRole = sharedPref.getString("user_role", "")
+                    if (userRole == "admin") {
+                        val intent = Intent(this@HomeActivity, RegisterStoreActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        showRegisterConfirmationDialog()
+                    }
+                },
+                onConfirmLogout = {
+                    val intent = Intent(this@HomeActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finishAffinity()
+                },
+                showRegisterConfirmation = showRegisterConfirmation,
+                onDismissRegisterConfirmation = { dismissRegisterConfirmation() },
+                onConfirmRegisterStore = { goToRegisterStore() },
+                viewModel = viewModel // ✅ Pastikan dikirim
             )
         }
     }

@@ -1,195 +1,209 @@
-// File: app/src/main/java/com/gantenginapp/apps/ui/screen/register/RegisterViewModel.kt
 package com.gantenginapp.apps.ui.screen.register
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gantenginapp.apps.data.dto.RegisterRequest
-import com.gantenginapp.apps.data.remote.RetrofitClient
+import com.gantenginapp.apps.data.dto.UserResponse
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
-import com.gantenginapp.apps.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import java.io.IOException
-import java.util.regex.Pattern
 
-class RegisterViewModel : ViewModel() {
-
-    private val authRepository = AuthRepositoryImpl(RetrofitClient.instance)
+class RegisterViewModel(
+    private val authRepository: AuthRepositoryImpl
+) : ViewModel() {
 
     private val _username = MutableStateFlow("")
     val username: StateFlow<String> = _username
 
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password
+    private val _noHp = MutableStateFlow("")
+    val noHp: StateFlow<String> = _noHp
 
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
 
-    private val _noHp = MutableStateFlow("")
-    val noHp: StateFlow<String> = _noHp
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> = _password
+
+    // ✅ Tambahkan state visibility password
+    private val _passwordVisible = MutableStateFlow(false)
+    val passwordVisible: StateFlow<Boolean> = _passwordVisible
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val _errorMessage = MutableStateFlow<String?>(null) // Error umum (backend, jaringan)
+    private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    private val _successMessage = MutableStateFlow<String?>(null)
-    val successMessage: StateFlow<String?> = _successMessage
+    // ✅ Tambahkan state untuk dialog sukses/gagal
+    private val _showSuccessDialog = MutableStateFlow(false)
+    val showSuccessDialog: StateFlow<Boolean> = _showSuccessDialog
 
-    private val _isSuccess = MutableStateFlow<Boolean?>(null)
-    val isSuccess: StateFlow<Boolean?> = _isSuccess
+    private val _showErrorDialog = MutableStateFlow(false)
+    val showErrorDialog: StateFlow<Boolean> = _showErrorDialog
 
-    // --- State baru untuk error validasi lokal ---
-    private val _usernameError = MutableStateFlow<String?>(null)
-    val usernameError: StateFlow<String?> = _usernameError
+    // --- State untuk error validasi lokal (diubah nama agar sesuai RegisterScreen.kt) ---
+    private val _usernameError = MutableStateFlow<String?>(null)  // ✅ Ganti: _usernameLocalError -> _usernameError
+    val usernameError: StateFlow<String?> = _usernameError       // ✅ Ganti: usernameLocalError -> usernameError
 
-    private val _noHpError = MutableStateFlow<String?>(null)
-    val noHpError: StateFlow<String?> = _noHpError
+    private val _noHpError = MutableStateFlow<String?>(null)     // ✅ Ganti: _noHpLocalError -> _noHpError
+    val noHpError: StateFlow<String?> = _noHpError              // ✅ Ganti: noHpLocalError -> noHpError
 
-    private val _emailError = MutableStateFlow<String?>(null)
-    val emailError: StateFlow<String?> = _emailError
+    private val _emailError = MutableStateFlow<String?>(null)    // ✅ Ganti: _emailLocalError -> _emailError
+    val emailError: StateFlow<String?> = _emailError            // ✅ Ganti: emailLocalError -> emailError
 
-    private val _passwordError = MutableStateFlow<String?>(null)
-    val passwordError: StateFlow<String?> = _passwordError
+    private val _passwordError = MutableStateFlow<String?>(null) // ✅ Ganti: _passwordLocalError -> _passwordError
+    val passwordError: StateFlow<String?> = _passwordError      // ✅ Ganti: passwordLocalError -> passwordError
 
-    fun onUsernameChange(value: String) {
-        _username.value = value
-        // Hapus error saat user mulai mengetik
-        if (_usernameError.value != null) _usernameError.value = null
+    fun onUsernameChange(username: String) {
+        _username.value = username
+        if (_usernameError.value != null) _usernameError.value = null  // ✅ Ganti: _usernameLocalError -> _usernameError
     }
 
-    fun onPasswordChange(value: String) {
-        _password.value = value
-        if (_passwordError.value != null) _passwordError.value = null
+    fun onNoHpChange(noHp: String) {
+        _noHp.value = noHp
+        if (_noHpError.value != null) _noHpError.value = null         // ✅ Ganti: _noHpLocalError -> _noHpError
     }
 
-    fun onEmailChange(value: String) {
-        _email.value = value
-        if (_emailError.value != null) _emailError.value = null
+    fun onEmailChange(email: String) {
+        _email.value = email
+        if (_emailError.value != null) _emailError.value = null       // ✅ Ganti: _emailLocalError -> _emailError
     }
 
-    fun onNoHpChange(value: String) {
-        _noHp.value = value
-        if (_noHpError.value != null) _noHpError.value = null
+    fun onPasswordChange(password: String) {
+        _password.value = password
+        if (_passwordError.value != null) _passwordError.value = null // ✅ Ganti: _passwordLocalError -> _passwordError
+    }
+
+    // ✅ Fungsi toggle visibility password
+    fun togglePasswordVisibility() {
+        _passwordVisible.value = !_passwordVisible.value
     }
 
     fun clearStatus() {
         _errorMessage.value = null
-        _successMessage.value = null
-        _isSuccess.value = null
-        // Juga hapus error lokal
-        _usernameError.value = null
-        _noHpError.value = null
-        _emailError.value = null
-        _passwordError.value = null
+        _usernameError.value = null                                   // ✅ Ganti: _usernameLocalError -> _usernameError
+        _noHpError.value = null                                       // ✅ Ganti: _noHpLocalError -> _noHpError
+        _emailError.value = null                                      // ✅ Ganti: _emailLocalError -> _emailError
+        _passwordError.value = null                                   // ✅ Ganti: _passwordLocalError -> _passwordError
+        _showSuccessDialog.value = false
+        _showErrorDialog.value = false
     }
 
-    fun performRegister(onSuccess: (User) -> Unit) {
+    fun performRegister() {
         viewModelScope.launch {
             _isLoading.value = true
-            clearStatus() // Hapus semua error sebelum mulai
+            clearStatus()
 
-            // --- Validasi input lokal SESUAI ATURAN API ---
-            var hasLocalError = false // Flag untuk menandai jika ada error validasi lokal
+            var hasLocalError = false
 
-            // 1. Validasi Username
             if (_username.value.isBlank()) {
-                _usernameError.value = "Username harus diisi."
+                _usernameError.value = "Username harus diisi."        // ✅ Ganti: _usernameLocalError -> _usernameError
                 hasLocalError = true
             }
 
-            // 2. Validasi No HP: angka saja 10–13 digit
-            if (_noHp.value.isNotBlank()) { // Validasi hanya jika tidak kosong (kamu bisa ubah jadi wajib)
-                val hpRegex = Pattern.compile("^[0-9]{10,13}$")
-                if (!hpRegex.matcher(_noHp.value).matches()) {
-                    _noHpError.value = "Nomor HP harus 10–13 digit dan hanya berisi angka."
-                    hasLocalError = true
-                }
-            } else {
-                _noHpError.value = "No HP harus diisi." // Jika kamu ingin No HP wajib
+            if (_noHp.value.isBlank()) {
+                _noHpError.value = "No HP harus diisi."               // ✅ Ganti: _noHpLocalError -> _noHpError
+                hasLocalError = true
+            } else if (!_noHp.value.matches(Regex("^[0-9]{10,13}$"))) {
+                _noHpError.value = "No HP harus 10-13 digit angka."  // ✅ Ganti: _noHpLocalError -> _noHpError
                 hasLocalError = true
             }
 
-            // 3. Validasi Email: format email
-            if (_email.value.isNotBlank()) { // Validasi hanya jika tidak kosong
-                val emailRegex = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-                if (!emailRegex.matcher(_email.value).matches()) {
-                    _emailError.value = "Format email tidak valid."
-                    hasLocalError = true
-                }
-            } else {
-                _emailError.value = "Email harus diisi." // Jika kamu ingin Email wajib
+            if (_email.value.isBlank()) {
+                _emailError.value = "Email harus diisi."              // ✅ Ganti: _emailLocalError -> _emailError
+                hasLocalError = true
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(_email.value).matches()) {
+                _emailError.value = "Format email tidak valid."       // ✅ Ganti: _emailLocalError -> _emailError
                 hasLocalError = true
             }
 
-            // 4. Validasi Password: huruf + angka, minimal 4 karakter
-            if (_password.value.isNotBlank()) { // Validasi hanya jika tidak kosong
-                val passwordRegex = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{4,}$")
-                if (!passwordRegex.matcher(_password.value).matches()) {
-                    _passwordError.value = "Password minimal 4 karakter dan harus mengandung huruf serta angka."
-                    hasLocalError = true
-                }
-            } else {
-                _passwordError.value = "Password harus diisi." // Jika kamu ingin Password wajib
+            if (_password.value.isBlank()) {
+                _passwordError.value = "Password harus diisi."        // ✅ Ganti: _passwordLocalError -> _passwordError
+                hasLocalError = true
+            } else if (!_password.value.matches(Regex("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{4,}$"))) {
+                _passwordError.value = "Password minimal 4 karakter dan harus mengandung huruf serta angka." // ✅ Ganti: _passwordLocalError -> _passwordError
                 hasLocalError = true
             }
 
-            // Jika ada error validasi lokal, hentikan proses
             if (hasLocalError) {
                 _isLoading.value = false
                 return@launch
             }
 
-            // Jika semua validasi lokal lolos, buat request
-            val request = RegisterRequest(
-                username = _username.value,
-                password = _password.value,
-                email = _email.value,
-                noHp = _noHp.value
-            )
-
             try {
-                val response = authRepository.register(request)
+                val request = RegisterRequest(
+                    username = _username.value,
+                    noHp = _noHp.value,
+                    email = _email.value,
+                    password = _password.value
+                )
 
-                // --- Penanganan respons backend (hanya jika request dikirim) ---
-                if (response.status) {
-                    val user = response.data!! // Asumsi data tidak null jika status true
-                    _successMessage.value = response.message ?: "Registrasi berhasil!"
-                    _isSuccess.value = true
-                    onSuccess(user)
+                Log.d("RegisterViewModel", "Mengirim request register: $request")
+
+                val response: UserResponse = authRepository.register(request)
+
+                Log.d("RegisterViewModel", "Respons API diterima: $response")
+                Log.d("RegisterViewModel", "Status: ${response.status}")
+                Log.d("RegisterViewModel", "User: ${response.user}")
+                Log.d("RegisterViewModel", "Message: ${response.message}")
+
+                if (response.status && response.user != null) {
+                    Log.d("RegisterViewModel", "Register sukses, user ID: ${response.user.id}")
+                    _showSuccessDialog.value = true
                 } else {
-                    // Jika request dikirim tapi API kembalikan status false
-                    // Gunakan pesan dari API untuk error selain validasi input (misalnya email sudah dipakai)
-                    val errorMsg = when (response.message) {
-                        "Email sudah digunakan." -> "Email ini sudah terdaftar. Silakan gunakan email lain."
-                        else -> "Registrasi gagal: ${response.message}"
+                    Log.d("RegisterViewModel", "Register gagal. Status: ${response.status}, User: ${response.user}")
+                    val errorMessageFromApi = response.message ?: "Register gagal."
+                    // ✅ Hanya tangani pesan "Email sudah digunakan"
+                    if (errorMessageFromApi == "Email sudah digunakan.") {
+                        _emailError.value = errorMessageFromApi        // ✅ Ganti: _emailLocalError -> _emailError
+                        _showErrorDialog.value = true
+                    } else {
+                        // ✅ Error lainnya tampilkan di error global
+                        _errorMessage.value = errorMessageFromApi
+                        _showErrorDialog.value = true
                     }
-                    // Tampilkan di error global
-                    _errorMessage.value = errorMsg
                 }
-
-            } catch (e: IOException) {
-                _errorMessage.value = "Tidak dapat terhubung ke server. Periksa koneksi internet Anda."
             } catch (e: HttpException) {
-                val errorMsg = when (e.code()) {
-                    409 -> "Email sudah digunakan."
-                    500 -> "Server mengalami kesalahan internal. Silakan coba lagi nanti."
-                    else -> "Terjadi kesalahan jaringan (${e.code()})."
+                Log.e("RegisterViewModel", "HTTP Error saat register: ${e.code()}, Message: ${e.message()}")
+                when (e.code()) {
+                    409 -> { // Conflict: Hanya untuk email yang sama
+                        val errorBody = e.response()?.errorBody()?.string()
+                        val errorMessageFromApi = try {
+                            val json = org.json.JSONObject(errorBody!!)
+                            json.getString("message")
+                        } catch (parseError: Exception) {
+                            "Data sudah digunakan."
+                        }
+                        // ✅ Hanya tangani pesan "Email sudah digunakan"
+                        if (errorMessageFromApi == "Email sudah digunakan.") {
+                            _emailError.value = errorMessageFromApi   // ✅ Ganti: _emailLocalError -> _emailError
+                        } else {
+                            _errorMessage.value = errorMessageFromApi
+                        }
+                        _showErrorDialog.value = true
+                    }
+                    400 -> _errorMessage.value = "Data tidak valid."
+                    500 -> _errorMessage.value = "Server mengalami kesalahan internal. Silakan coba lagi nanti."
                 }
-                _errorMessage.value = errorMsg
             } catch (e: Exception) {
-                _errorMessage.value = "Terjadi kesalahan tak terduga: ${e.message}"
+                Log.e("RegisterViewModel", "Exception saat register", e)
+                _errorMessage.value = e.message
+                _showErrorDialog.value = true
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    private fun setError(message: String) {
-        _errorMessage.value = message
-        _isSuccess.value = false
+    // ✅ Fungsi untuk menutup dialog
+    fun dismissSuccessDialog() {
+        _showSuccessDialog.value = false
+    }
+
+    fun dismissErrorDialog() {
+        _showErrorDialog.value = false
     }
 }

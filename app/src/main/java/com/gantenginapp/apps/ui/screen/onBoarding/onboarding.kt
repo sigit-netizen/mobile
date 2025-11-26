@@ -1,5 +1,6 @@
 package com.gantenginapp.apps.ui.screen.onBoarding
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -9,26 +10,35 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.shape.CircleShape
+import com.gantenginapp.apps.R
+
+data class OnboardingPage(
+    val imageResId: Int,
+    val description: String
+)
+
+val defaultOnboardingPages = listOf(
+    OnboardingPage(R.drawable.img1, "Temukan berbagai fitur menarik untuk mempermudah harimu."),
+    OnboardingPage(R.drawable.img2, "Nikmati pengalaman cepat dan ringan dengan desain modern."),
+    OnboardingPage(R.drawable.img3, "Mulai perjalananmu bersama kami hari ini!")
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LandingScreen(
-    onSkipClick: () -> Unit
+    onSkipClick: () -> Unit,
+    pages: List<OnboardingPage> = defaultOnboardingPages
 ) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
-    val scope = rememberCoroutineScope()
-
-    val pages = listOf(
-        "Image 1" to "Temukan berbagai fitur menarik untuk mempermudah harimu.",
-        "Image 2" to "Nikmati pengalaman cepat dan ringan dengan desain modern.",
-        "Image 3" to "Mulai perjalananmu bersama kami hari ini!"
-    )
+    val pagerState = rememberPagerState(pageCount = { pages.size })
 
     Box(
         modifier = Modifier
@@ -38,76 +48,74 @@ fun LandingScreen(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
-            // Pager (geser-geser 3 card)
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            // 🖼️ Gambar + teks — pakai ukuran tetap agar tidak memenuhi layar
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .height(550.dp) // ⬅️ Tetapkan tinggi maksimal
+                    .fillMaxWidth()
+            ) { page ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
                 ) {
-                    // Gambar Sementara
-                    Box(
-                        modifier = Modifier
-                            .size(220.dp)
-                            .background(Color.LightGray),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = pages[page].first,
-                            fontSize = 22.sp,
-                            color = Color.DarkGray,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = pages[page].imageResId),
+                        contentDescription = null,
+                        modifier = Modifier.size(400.dp), // ⬇️ Ukuran lebih kecil agar tidak terlalu besar
+                        contentScale = ContentScale.Fit
+                    )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Deskripsi
                     Text(
-                        text = pages[page].second,
+                        text = pages[page].description,
                         fontSize = 18.sp,
                         color = Color.Black,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // ⬇️ JARAK DIPERKECIL — DOTS DAN TOMBOL DI ATASKAN!
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Indikator dots
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                repeat(3) { index ->
+                repeat(pages.size) { index ->
                     val isSelected = pagerState.currentPage == index
                     Box(
                         modifier = Modifier
                             .padding(4.dp)
                             .size(if (isSelected) 12.dp else 8.dp)
                             .background(
-                                if (isSelected) Color(0xFF6200EE) else Color.Gray,
-                                shape = MaterialTheme.shapes.small
+                                color = if (isSelected) Color(0xFF6200EE) else Color.Gray,
+                                shape = CircleShape
                             )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
-            // Tombol Skip
+            // ✅ TOMBOL SKIP — DI ATASKAN LEBIH TINGGI
             Button(
                 onClick = onSkipClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(50.dp)
+                    .padding(bottom = 5.dp), // ⬇️ Kurangi padding bottom
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
             ) {
                 Text(
@@ -118,6 +126,7 @@ fun LandingScreen(
                 )
             }
 
+            // ⬆️ Tambahkan spacer kecil di bawah — agar tidak menyentuh tepi bawah
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -126,7 +135,5 @@ fun LandingScreen(
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun PreviewLandingScreen() {
-    LandingScreen(
-        onSkipClick = {}
-    )
+    LandingScreen(onSkipClick = {})
 }

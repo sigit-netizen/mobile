@@ -14,6 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LearnAndroidDasar">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_ACTUAL_API_KEY_HERE" />
+
         <activity
             android:name="com.gantenginapp.apps.MainActivity"
             android:exported="true"
@@ -54,6 +58,16 @@
 
         <activity
             android:name="com.gantenginapp.apps.ui.screen.profil.ProfileActivity"
+            android:exported="true"
+            android:label="Login" />
+
+        <activity
+            android:name="com.gantenginapp.apps.ui.screen.registerstore.RegisterStoreActivity"
+            android:exported="true"
+            android:label="Login" />
+
+        <activity
+            android:name="com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreActivity"
             android:exported="true"
             android:label="Login" />
 

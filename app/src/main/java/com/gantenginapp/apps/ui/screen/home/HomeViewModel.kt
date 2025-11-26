@@ -1,43 +1,71 @@
 package com.gantenginapp.apps.ui.screen.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.SharingStarted
+
+data class StoreItem(
+    val id: Int,
+    val name: String,
+    val address: String,
+    val price: String,
+    val status: String // "tersedia", "penuh", "tutup"
+)
 
 class HomeViewModel : ViewModel() {
 
-    private val _username = MutableStateFlow("Ananda") // Ganti dengan data sebenarnya
+    private val _username = MutableStateFlow("Ananda")
     val username: StateFlow<String> = _username
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // ✅ Fix: Tambahkan tipe data
-    private val _data = MutableStateFlow<List<String>>(emptyList())
-    val data: StateFlow<List<String>> = _data
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _allStores = MutableStateFlow<List<StoreItem>>(emptyList())
+    val filteredStores: StateFlow<List<StoreItem>> = combine(_allStores, _searchQuery) { stores, query ->
+        if (query.isBlank()) stores else stores.filter { it.name.contains(query, ignoreCase = true) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _showLogoutDialog = MutableStateFlow(false)
+    val showLogoutDialog: StateFlow<Boolean> = _showLogoutDialog
 
     init {
         loadData()
     }
 
     private fun loadData() {
-        // Contoh: load data dari repository
         _isLoading.value = true
-        // Misalnya: _data.value = repository.getData()
-        _data.value = listOf("Item 1", "Item 2", "Item 3") // Dummy data
+        _allStores.value = listOf(
+            StoreItem(1, "Barber Ananda", "Jl. Merdeka No.1", "Rp.10000", "tersedia"),
+            StoreItem(2, "Tukang Potong Rapi", "Jl. Sudirman", "Rp.15000", "penuh"),
+            StoreItem(3, "Gantengin Barber", "Jl. Gatot Subroto", "Rp.12000", "tutup"),
+            StoreItem(4, "Potong Cepat", "Jl. Diponegoro", "Rp.8000", "tersedia"),
+            StoreItem(5, "Salon Keren", "Jl. Ahmad Yani", "Rp.20000", "tersedia"),
+            StoreItem(6, "Fade Master", "Jl. Veteran", "Rp.18000", "penuh"),
+            StoreItem(7, "Trim & Go", "Jl. Pahlawan", "Rp.9000", "tutup"),
+            StoreItem(8, "Clean Cut", "Jl. Flores", "Rp.11000", "tersedia"),
+            StoreItem(9, "Sharp Line", "Jl. Bali", "Rp.13000", "tersedia"),
+            StoreItem(10, "Edge Barber", "Jl. Sumatra", "Rp.16000", "penuh")
+        )
         _isLoading.value = false
     }
 
-    fun onProfileClick() {
-        // ✅ Logika saat profile diklik
-        // Contoh: navigasi ke ProfileActivity
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 
-    fun onDetailClick() {
-        // Contoh: logika saat detail diklik
+    fun showLogoutDialog() {
+        _showLogoutDialog.value = true
     }
 
-    fun onLogoutClick() {
-        // Contoh: clear session di repository
+    fun dismissLogoutDialog() {
+        _showLogoutDialog.value = false
     }
 }

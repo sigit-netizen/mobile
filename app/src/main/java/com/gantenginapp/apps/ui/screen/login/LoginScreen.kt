@@ -5,6 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,15 +37,17 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val successMessage by viewModel.successMessage.collectAsState()
-    // ✅ Ambil error validasi lokal dari ViewModel
     val usernameLocalError by viewModel.usernameLocalError.collectAsState()
     val passwordLocalError by viewModel.passwordLocalError.collectAsState()
+    // ✅ Tambahkan state visibility password
+    val passwordVisible by viewModel.passwordVisible.collectAsState()
 
     LoginScreenContent(
         username = username,
         password = password,
-        usernameLocalError = usernameLocalError, // ✅ Kirim error ke content
-        passwordLocalError = passwordLocalError, // ✅ Kirim error ke content
+        passwordVisible = passwordVisible, // ✅ Kirim ke content
+        usernameLocalError = usernameLocalError,
+        passwordLocalError = passwordLocalError,
         errorMessage = errorMessage,
         successMessage = successMessage,
         isLoading = isLoading,
@@ -52,6 +59,7 @@ fun LoginScreen(
             viewModel.onPasswordChange(it)
             viewModel.clearStatus()
         },
+        onTogglePasswordVisibility = { viewModel.togglePasswordVisibility() }, // ✅ Kirim ke content
         onLoginClick = {
             viewModel.performLogin {
                 onLoginSuccess()
@@ -66,19 +74,22 @@ fun LoginScreen(
 fun LoginScreenContent(
     username: String,
     password: String,
-    usernameLocalError: String?, // ✅ Terima error validasi lokal
-    passwordLocalError: String?, // ✅ Terima error validasi lokal
+    passwordVisible: Boolean, // ✅ Tambahkan parameter ini
+    usernameLocalError: String?,
+    passwordLocalError: String?,
     errorMessage: String?,
     successMessage: String?,
     isLoading: Boolean,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onTogglePasswordVisibility: () -> Unit, // ✅ Tambahkan parameter ini
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(ColorCustom.bg)
     ) {
@@ -152,8 +163,8 @@ fun LoginScreenContent(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = usernameLocalError != null, // ✅ Tandai error jika ada error validasi lokal (kosong atau dari API)
-                supportingText = { // ✅ Tampilkan pesan error validasi lokal
+                isError = usernameLocalError != null,
+                supportingText = {
                     if (usernameLocalError != null) {
                         Text(
                             text = usernameLocalError,
@@ -165,6 +176,7 @@ fun LoginScreenContent(
 
             Spacer(Modifier.height(8.dp))
 
+            // ✅ Ganti TextField password dengan ikon mata
             TextField(
                 value = password,
                 onValueChange = onPasswordChange,
@@ -182,12 +194,32 @@ fun LoginScreenContent(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = passwordLocalError != null, // ✅ Tandai error jika ada error validasi lokal (kosong atau dari API)
-                supportingText = { // ✅ Tampilkan pesan error validasi lokal
+                isError = passwordLocalError != null,
+                supportingText = {
                     if (passwordLocalError != null) {
                         Text(
                             text = passwordLocalError,
                             color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                // ✅ Visual transformation dinamis
+                visualTransformation = if (passwordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                // ✅ Tambahkan trailing icon (mata)
+                trailingIcon = {
+                    val image = if (passwordVisible) {
+                        Icons.Default.Visibility
+                    } else {
+                        Icons.Default.VisibilityOff
+                    }
+                    IconButton(onClick = onTogglePasswordVisibility) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = "Toggle password visibility"
                         )
                     }
                 }
@@ -195,15 +227,14 @@ fun LoginScreenContent(
 
             Spacer(Modifier.height(8.dp))
 
-            // ✅ Tampilkan pesan error GLOBAL (dari ViewModel - validasi lokal gagal, atau error umum dari API/jaringan)
             errorMessage?.let {
                 Text(
                     text = it,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodySmall // Gunakan style kecil agar tidak terlalu dominan
+                    style = MaterialTheme.typography.bodySmall
                 )
-                Spacer(Modifier.height(4.dp)) // Sedikit jarak setelah pesan error
+                Spacer(Modifier.height(4.dp))
             }
 
             Spacer(Modifier.height(8.dp))
@@ -223,10 +254,9 @@ fun LoginScreenContent(
                 }
             }
 
-            // ✅ Tampilkan pesan sukses
             successMessage?.let {
                 Spacer(Modifier.height(8.dp))
-                Text(it, color = Color(0xFF4CAF50)) // Hijau sukses
+                Text(it, color = Color(0xFF4CAF50))
             }
 
             Spacer(Modifier.height(8.dp))
@@ -241,12 +271,130 @@ fun LoginScreenContent(
     }
 }
 
-@Preview(showBackground = true)
+//region Preview
+@Preview(showBackground = true, name = "Login - Default")
 @Composable
-fun TryLoginScreenPreview() {
-    LoginScreen(
-        onLoginSuccess = {},
+fun PreviewLoginScreen_Default() {
+    LoginScreenContent(
+        username = "",
+        password = "",
+        passwordVisible = false, // ✅ Tambahkan
+        usernameLocalError = null,
+        passwordLocalError = null,
+        errorMessage = null,
+        successMessage = null,
+        isLoading = false,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {}, // ✅ Tambahkan
+        onLoginClick = {},
         onRegisterClick = {},
         onBackClick = {}
     )
 }
+
+@Preview(showBackground = true, name = "Login - Error Username")
+@Composable
+fun PreviewLoginScreen_UsernameError() {
+    LoginScreenContent(
+        username = "user",
+        password = "123",
+        passwordVisible = false,
+        usernameLocalError = "Username minimal 4 karakter",
+        passwordLocalError = null,
+        errorMessage = null,
+        successMessage = null,
+        isLoading = false,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onBackClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Login - Error Password")
+@Composable
+fun PreviewLoginScreen_PasswordError() {
+    LoginScreenContent(
+        username = "user123",
+        password = "123",
+        passwordVisible = false,
+        usernameLocalError = null,
+        passwordLocalError = "Password minimal 6 karakter",
+        errorMessage = null,
+        successMessage = null,
+        isLoading = false,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onBackClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Login - Global Error")
+@Composable
+fun PreviewLoginScreen_GlobalError() {
+    LoginScreenContent(
+        username = "user123",
+        password = "password123",
+        passwordVisible = false,
+        usernameLocalError = null,
+        passwordLocalError = null,
+        errorMessage = "Username atau password salah",
+        successMessage = null,
+        isLoading = false,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onBackClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Login - Loading")
+@Composable
+fun PreviewLoginScreen_Loading() {
+    LoginScreenContent(
+        username = "user123",
+        password = "password123",
+        passwordVisible = false,
+        usernameLocalError = null,
+        passwordLocalError = null,
+        errorMessage = null,
+        successMessage = null,
+        isLoading = true,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onBackClick = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Login - Success")
+@Composable
+fun PreviewLoginScreen_Success() {
+    LoginScreenContent(
+        username = "user123",
+        password = "password123",
+        passwordVisible = false,
+        usernameLocalError = null,
+        passwordLocalError = null,
+        errorMessage = null,
+        successMessage = "Login berhasil!",
+        isLoading = false,
+        onUsernameChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onLoginClick = {},
+        onRegisterClick = {},
+        onBackClick = {}
+    )
+}
+//endregion

@@ -1,12 +1,15 @@
-// File: RegisterScreen.kt
+// app/src/main/java/com/gantenginapp/apps/ui/screen/register/RegisterScreen.kt
 package com.gantenginapp.apps.ui.screen.register
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,43 +17,117 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel // ✅ Import ini
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
-import com.gantenginapp.apps.domain.model.User
 import com.gantenginapp.apps.ui.theme.ColorCustom
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: (User) -> Unit,
+    onRegisterSuccess: () -> Unit,
     onBackClick: () -> Unit,
-    onRegistrationComplete: () -> Unit // ✅ Harus ada
+    viewModel: RegisterViewModel = viewModel()
 ) {
-    // ✅ Gunakan ViewModel
-    val viewModel: RegisterViewModel = viewModel()
-
-    // ✅ Ambil state dari ViewModel (termasuk error lokal)
     val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
     val email by viewModel.email.collectAsState()
     val noHp by viewModel.noHp.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val passwordVisible by viewModel.passwordVisible.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    val successMessage by viewModel.successMessage.collectAsState()
-    // ✅ Ambil error lokal
     val usernameError by viewModel.usernameError.collectAsState()
     val noHpError by viewModel.noHpError.collectAsState()
     val emailError by viewModel.emailError.collectAsState()
     val passwordError by viewModel.passwordError.collectAsState()
+    val showSuccessDialog by viewModel.showSuccessDialog.collectAsState()
+    val showErrorDialog by viewModel.showErrorDialog.collectAsState()
 
+    // ✅ AlertDialog untuk sukses
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissSuccessDialog() },
+            title = { Text("Registrasi Berhasil") },
+            text = { Text("Akun Anda telah berhasil dibuat. Silakan login untuk melanjutkan.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.dismissSuccessDialog()
+                    onRegisterSuccess()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    // ✅ AlertDialog untuk error
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissErrorDialog() },
+            title = { Text("Registrasi Gagal") },
+            text = { Text(errorMessage ?: "Terjadi kesalahan saat registrasi.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissErrorDialog() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    RegisterScreenContent(
+        username = username,
+        password = password,
+        email = email,
+        noHp = noHp,
+        isLoading = isLoading,
+        passwordVisible = passwordVisible,
+        usernameError = usernameError,
+        noHpError = noHpError,
+        emailError = emailError,
+        passwordError = passwordError,
+        onUsernameChange = { viewModel.onUsernameChange(it) },
+        onNoHpChange = { viewModel.onNoHpChange(it) },
+        onEmailChange = { viewModel.onEmailChange(it) },
+        onPasswordChange = { viewModel.onPasswordChange(it) },
+        onTogglePasswordVisibility = { viewModel.togglePasswordVisibility() },
+        onRegisterClick = {
+            Log.d("RegisterScreen", "onRegisterClick dipanggil")  // ✅ Sudah ada
+            viewModel.performRegister()
+        },
+        onBackClick = onBackClick
+    )
+}
+
+@Composable
+fun RegisterScreenContent(
+    username: String,
+    password: String,
+    email: String,
+    noHp: String,
+    isLoading: Boolean,
+    passwordVisible: Boolean,
+    usernameError: String?,
+    noHpError: String?,
+    emailError: String?,
+    passwordError: String?,
+    onUsernameChange: (String) -> Unit,
+    onNoHpChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
+    onRegisterClick: () -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // ✅ Hapus Box wrapper dan overlay loading
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(ColorCustom.bg)
     ) {
-        // Bagian Atas (Logo dan Header)
         Column {
             Row(
                 modifier = Modifier
@@ -78,7 +155,6 @@ fun RegisterScreen(
             }
         }
 
-        // Bagian Bawah (Form Register)
         Column(
             modifier = Modifier
                 .background(
@@ -101,10 +177,9 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Username
             TextField(
                 value = username,
-                onValueChange = { viewModel.onUsernameChange(it) }, // ✅ Gunakan ViewModel
+                onValueChange = onUsernameChange,
                 label = { Text("Username") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -119,26 +194,22 @@ fun RegisterScreen(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = usernameError != null, // ✅ Tandai error
-                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                isError = usernameError != null,
+                supportingText = {
                     if (usernameError != null) {
                         Text(
-                            text = usernameError!!,
+                            text = usernameError,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
-                    // Jika tidak ada error, supportingText tetap perlu ada, bisa kosong
-                    // Tapi karena kita hanya ingin tampilkan saat error, kita biarkan 'if' saja
-                    // Jika ingin placeholder saat tidak error, tambahkan else {}
                 }
             )
 
             Spacer(Modifier.height(8.dp))
 
-            // No Hp
             TextField(
                 value = noHp,
-                onValueChange = { viewModel.onNoHpChange(it) }, // ✅ Gunakan ViewModel
+                onValueChange = onNoHpChange,
                 label = { Text("NoHp") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -153,11 +224,11 @@ fun RegisterScreen(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = noHpError != null, // ✅ Tandai error
-                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                isError = noHpError != null,
+                supportingText = {
                     if (noHpError != null) {
                         Text(
-                            text = noHpError!!,
+                            text = noHpError,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -166,10 +237,9 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Email
             TextField(
                 value = email,
-                onValueChange = { viewModel.onEmailChange(it) }, // ✅ Gunakan ViewModel
+                onValueChange = onEmailChange,
                 label = { Text("Email") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -184,11 +254,11 @@ fun RegisterScreen(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = emailError != null, // ✅ Tandai error
-                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                isError = emailError != null,
+                supportingText = {
                     if (emailError != null) {
                         Text(
-                            text = emailError!!,
+                            text = emailError,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -197,10 +267,9 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Password
             TextField(
                 value = password,
-                onValueChange = { viewModel.onPasswordChange(it) }, // ✅ Gunakan ViewModel
+                onValueChange = onPasswordChange,
                 label = { Text("Password") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -215,12 +284,30 @@ fun RegisterScreen(
                     unfocusedContainerColor = ColorCustom.bg,
                     focusedContainerColor = ColorCustom.bg,
                 ),
-                isError = passwordError != null, // ✅ Tandai error
-                supportingText = { // ✅ Tampilkan pesan error atau helper text
+                isError = passwordError != null,
+                supportingText = {
                     if (passwordError != null) {
                         Text(
-                            text = passwordError!!,
+                            text = passwordError,
                             color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    val image = if (passwordVisible) {
+                        Icons.Default.Visibility
+                    } else {
+                        Icons.Default.VisibilityOff
+                    }
+                    IconButton(onClick = onTogglePasswordVisibility) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = "Toggle password visibility"
                         )
                     }
                 }
@@ -228,18 +315,13 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Tombol Register
             Button(
                 onClick = {
-                    // ✅ Panggil ViewModel untuk memproses registrasi
-                    // Jangan langsung panggil onRegistrationComplete() di sini
-                    viewModel.performRegister { user ->
-                        onRegisterSuccess(user)
-                        onRegistrationComplete() // ✅ Panggil di sini, setelah sukses dari ViewModel
-                    }
+                    Log.d("RegisterScreen", "Button onClick dipanggil")  // ✅ Tambahkan log
+                    onRegisterClick()  // ✅ Panggil fungsi
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading // ✅ Nonaktifkan saat loading
+                enabled = !isLoading // ✅ Nonaktifkan tombol saat loading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -251,26 +333,13 @@ fun RegisterScreen(
                 }
             }
 
-            // ✅ Tampilkan pesan error GLOBAL (dari ViewModel - backend, jaringan)
-            errorMessage?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
-            }
-
-            // ✅ Tampilkan pesan sukses (dari ViewModel)
-            successMessage?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = Color(0xFF4CAF50)) // hijau
-            }
-
             Spacer(Modifier.height(8.dp))
 
-            // Tombol balik ke login
-            TextButton( // ✅ Pastikan struktur ini benar
+            TextButton(
                 onClick = onBackClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Back to login", color = ColorCustom.link) // 'content' untuk TextButton adalah composable di dalam {}
+                Text("Back to login", color = ColorCustom.link)
             }
         }
     }
@@ -279,9 +348,23 @@ fun RegisterScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRegisterScreen() {
-    RegisterScreen(
-        onRegisterSuccess = { },
-        onBackClick = { },
-        onRegistrationComplete = { } // ✅ Harus ada di preview juga
+    RegisterScreenContent(
+        username = "",
+        password = "",
+        email = "",
+        noHp = "",
+        isLoading = false,
+        passwordVisible = false,
+        usernameError = null,
+        noHpError = null,
+        emailError = null,
+        passwordError = null,
+        onUsernameChange = {},
+        onNoHpChange = {},
+        onEmailChange = {},
+        onPasswordChange = {},
+        onTogglePasswordVisibility = {},
+        onRegisterClick = {},
+        onBackClick = {}
     )
 }

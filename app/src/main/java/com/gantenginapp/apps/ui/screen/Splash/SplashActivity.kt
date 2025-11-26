@@ -4,28 +4,31 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.ui.screen.onBoarding.LandingActivity
+
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MySplashScreen {
-                startActivity(Intent(this@SplashActivity, LandingActivity::class.java))
-                finish()
+            val shouldNavigate = remember { mutableStateOf(false) }
+
+            // Gunakan ViewModel
+            val splashViewModel: SplashViewModel = viewModel()
+
+            if (!shouldNavigate.value) {
+                SplashScreen(
+                    viewModel = splashViewModel,
+                    onNavigateToNext = {
+                        shouldNavigate.value = true
+                        startActivity(Intent(this@SplashActivity, LandingActivity::class.java))
+                        finish()
+                    }
+                )
             }
         }
     }
-}
-
-@Composable
-fun MySplashScreen(onTimeout : () -> Unit) {
-    // Delay sebelum lanjut ke MainActivity
-    LaunchedEffect(Unit) {
-        delay(2000L)
-        onTimeout()
-    }
-    SplashScreenUI()
 }

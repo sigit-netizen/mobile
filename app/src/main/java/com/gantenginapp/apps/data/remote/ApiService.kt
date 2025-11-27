@@ -12,7 +12,7 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): UserResponse
 
     @GET("auth/profile/{id}")
-    suspend fun getUserById(@Path("id") userId: Int): UserResponse // ✅ tetap UserResponse
+    suspend fun getUserById(@Path("id") userId: Int): UserResponse
 
     @PUT("auth/profile/{id}")
     suspend fun updateUser(

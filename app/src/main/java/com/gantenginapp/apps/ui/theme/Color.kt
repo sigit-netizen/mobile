@@ -15,4 +15,6 @@ object ColorCustom {
     val bg = Color(0xFFFFFFFF)
     val black = Color(0xFF000000)
     val link = Color(0xFF112DFF)
+
+    val gray = Color(0x144A4E53)
 }

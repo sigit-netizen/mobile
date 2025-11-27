@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import com.gantenginapp.apps.ui.theme.ColorCustom
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,11 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,9 +38,11 @@ fun AiPageScreen(
     val focusManager = LocalFocusManager.current
 
     Scaffold(
-
+        modifier = Modifier.background(ColorCustom.bg),
         bottomBar = {
-            Column {
+            Column (
+                modifier = Modifier.background(ColorCustom.bg).windowInsetsPadding(WindowInsets(0))
+            ) {
                 if (isAiThinking.value) {
                     // simple typing indicator
                     Text(
@@ -56,7 +58,9 @@ fun AiPageScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .background(ColorCustom.bg),
+
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
@@ -64,8 +68,9 @@ fun AiPageScreen(
                         onValueChange = onInputChanged,
                         modifier = Modifier
                             .weight(1f)
-                            .heightIn(min = 56.dp),
-                        placeholder = { Text("Tulis pesan...") },
+                            .heightIn(min = 56.dp)
+                            .background(ColorCustom.bg),
+                        placeholder = { Text("Tanyakan tentang Model...") },
                         maxLines = 4,
                         singleLine = false
                     )
@@ -78,6 +83,8 @@ fun AiPageScreen(
                             focusManager.clearFocus()
                         },
                         modifier = Modifier.size(48.dp),
+                        containerColor = ColorCustom.black,
+                        contentColor = ColorCustom.bg
                     ) {
                         Icon(Icons.Default.Send, contentDescription = "Send")
                     }
@@ -89,7 +96,7 @@ fun AiPageScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color.White) ,
+                .background(ColorCustom.bg) ,
             messages = messages,
             onMessageLongPress = onMessageLongPress
         )
@@ -109,7 +116,7 @@ private fun ChatList(
         itemsIndexed(messages) { index, msg ->
             val alignment = if (msg.isUser) Alignment.End else Alignment.Start
             val bubbleColor = if (msg.isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-            val textColor = if (msg.isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            val textColor =  MaterialTheme.colorScheme.onSurfaceVariant
 
             Row(
                 modifier = Modifier
@@ -121,7 +128,7 @@ private fun ChatList(
                     modifier = Modifier
                         .widthIn(max = 270.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(bubbleColor)
+                        .background(ColorCustom.gray)
                         .clickable { /* optional click */ }
                         .padding(horizontal = 12.dp, vertical = 10.dp)
                 ) {
@@ -134,7 +141,7 @@ private fun ChatList(
             }
         }
 
-        // small bottom spacer
+
         item {
             Spacer(modifier = Modifier.height(64.dp))
         }

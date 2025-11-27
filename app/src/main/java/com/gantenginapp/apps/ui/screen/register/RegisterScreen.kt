@@ -122,23 +122,31 @@ fun RegisterScreenContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // ✅ Hapus Box wrapper dan overlay loading
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(ColorCustom.bg)
     ) {
-        Column {
+        Column (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp).background(color = ColorCustom.bg),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logout),
+                        contentDescription = "Keluar",
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
+
                 Text("?", fontSize = 28.sp)
             }
 
@@ -167,7 +175,7 @@ fun RegisterScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Register",
+                "REGISTER",
                 fontSize = 32.sp,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = ColorCustom.bg,
@@ -205,7 +213,7 @@ fun RegisterScreenContent(
                 }
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(2.dp))
 
             TextField(
                 value = noHp,
@@ -235,7 +243,7 @@ fun RegisterScreenContent(
                 }
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(2.dp))
 
             TextField(
                 value = email,
@@ -265,7 +273,7 @@ fun RegisterScreenContent(
                 }
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(2.dp))
 
             TextField(
                 value = password,
@@ -313,15 +321,15 @@ fun RegisterScreenContent(
                 }
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(2.dp))
 
             Button(
                 onClick = {
-                    Log.d("RegisterScreen", "Button onClick dipanggil")  // ✅ Tambahkan log
-                    onRegisterClick()  // ✅ Panggil fungsi
+                    Log.d("RegisterScreen", "Button onClick dipanggil")
+                    onRegisterClick()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading // ✅ Nonaktifkan tombol saat loading
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -333,7 +341,7 @@ fun RegisterScreenContent(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(2.dp))
 
             TextButton(
                 onClick = onBackClick,

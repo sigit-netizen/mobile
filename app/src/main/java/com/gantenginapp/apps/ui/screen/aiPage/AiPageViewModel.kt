@@ -17,13 +17,13 @@ data class Message(
 
 class AiPageViewModel : ViewModel() {
 
-    // public read-only lists for UI
+
     val messages = mutableStateListOf<Message>()
     val inputText = mutableStateOf("")
     val isAiThinking = mutableStateOf(false)
 
     init {
-        // optional welcome message
+
         messages.add(
             Message(
                 text = "Halo! Aku siap bantu rekomendasi gaya rambut. Coba ketik: \"Halo\" atau \"Mulai\"",
@@ -181,7 +181,7 @@ class AiPageViewModel : ViewModel() {
             - Bikin ikal lebih rapi & proporsional
         """.trimIndent()
 
-            // --- Wajah Kotak ---
+
             "kotak" to "lurus" -> """
             Wajah **kotak** + rambut **lurus** cocok:
 

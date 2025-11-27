@@ -1,4 +1,4 @@
-// app/src/main/java/com/gantenginapp/apps/data/repository/AuthRepositoryImpl.kt
+
 package com.gantenginapp.apps.data.repository
 
 import com.gantenginapp.apps.data.dto.*
@@ -21,13 +21,13 @@ class AuthRepositoryImpl(
     suspend fun updateUser(
         userId: Int,
         username: String,
-        noHp : String,       // di sini kita pakai "phone" (natural di Kotlin)
+        noHp : String,
         email: String,
         password: String? = null
     ): ApiResponse {
         val request = UpdateUserRequest(
             username = username,
-            noHP = noHp,        // ✅ map "phone" → "noHP" untuk API
+            noHP = noHp,
             email = email,
             password = password
         )

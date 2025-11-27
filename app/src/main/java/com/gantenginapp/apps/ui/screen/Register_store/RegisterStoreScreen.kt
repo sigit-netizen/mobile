@@ -32,13 +32,11 @@ fun RegisterStoreScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-
     var name by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var alamatToko by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") } // ✅ Tambahkan field password
-    var passwordVisible by remember { mutableStateOf(false) } // ✅ Tambahkan state visibility password
-
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -87,7 +85,7 @@ fun RegisterStoreScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Regist Your Store",
+                "PENDAFTARAN TOKO",
                 fontSize = 32.sp,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = ColorCustom.bg,
@@ -95,7 +93,7 @@ fun RegisterStoreScreen(
                 )
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(40.dp))
 
             // Username
             TextField(

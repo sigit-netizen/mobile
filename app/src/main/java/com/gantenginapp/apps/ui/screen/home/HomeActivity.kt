@@ -21,14 +21,13 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            // ✅ State untuk dialog logout
             var showLogoutDialog by remember { mutableStateOf(false) }
-            // ✅ State untuk dialog konfirmasi daftar toko
+
             var showRegisterConfirmation by remember { mutableStateOf(false) }
-            // ✅ State untuk dialog logout saat back
+
             var showBackLogoutDialog by remember { mutableStateOf(false) }
 
-            // ✅ Callback untuk tombol back
+
             val backPressedCallback = object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     showBackLogoutDialog = true

@@ -14,7 +14,7 @@ data class StoreItem(
     val name: String,
     val address: String,
     val price: String,
-    val status: String // "tersedia", "penuh", "tutup"
+    val status: String
 )
 
 class HomeViewModel : ViewModel() {

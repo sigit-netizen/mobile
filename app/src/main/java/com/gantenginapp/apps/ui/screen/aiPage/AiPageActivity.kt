@@ -21,7 +21,7 @@ class AiPageActivity : ComponentActivity() {
                     isAiThinking = viewModel.isAiThinking,
                     onInputChanged = viewModel::onInputChanged,
                     onSendClicked = viewModel::onSendClicked,
-                    onMessageLongPress = { /* optionally handle copy/delete */ }
+                    onMessageLongPress = {  }
                 )
             }
         }

@@ -74,7 +74,7 @@ fun LoginScreen(
 fun LoginScreenContent(
     username: String,
     password: String,
-    passwordVisible: Boolean, // ✅ Tambahkan parameter ini
+    passwordVisible: Boolean,
     usernameLocalError: String?,
     passwordLocalError: String?,
     errorMessage: String?,
@@ -82,7 +82,7 @@ fun LoginScreenContent(
     isLoading: Boolean,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
-    onTogglePasswordVisibility: () -> Unit, // ✅ Tambahkan parameter ini
+    onTogglePasswordVisibility: () -> Unit,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -136,7 +136,7 @@ fun LoginScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Login",
+                "LOGIN",
                 fontSize = 32.sp,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = ColorCustom.bg,
@@ -261,12 +261,20 @@ fun LoginScreenContent(
 
             Spacer(Modifier.height(8.dp))
 
-            TextButton(
-                onClick = onRegisterClick,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Go to register", color = ColorCustom.link)
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text("Do you want to create an account ? ", color = ColorCustom.bg)
+                TextButton(
+                    onClick = onRegisterClick,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+
+                    Text("Go to register", color = ColorCustom.link)
+                }
             }
+
         }
     }
 }
@@ -278,7 +286,7 @@ fun PreviewLoginScreen_Default() {
     LoginScreenContent(
         username = "",
         password = "",
-        passwordVisible = false, // ✅ Tambahkan
+        passwordVisible = false,
         usernameLocalError = null,
         passwordLocalError = null,
         errorMessage = null,
@@ -286,7 +294,7 @@ fun PreviewLoginScreen_Default() {
         isLoading = false,
         onUsernameChange = {},
         onPasswordChange = {},
-        onTogglePasswordVisibility = {}, // ✅ Tambahkan
+        onTogglePasswordVisibility = {},
         onLoginClick = {},
         onRegisterClick = {},
         onBackClick = {}

@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.border
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +29,8 @@ import com.gantenginapp.apps.R
 import com.gantenginapp.apps.ui.screen.aiPage.AiPageViewModel
 import com.gantenginapp.apps.ui.screen.aiPage.AiPageScreen
 import androidx.activity.compose.BackHandler
+import com.gantenginapp.apps.ui.theme.ColorCustom
+import androidx.compose.foundation.text.BasicTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +45,7 @@ fun HomeScreen(
     onConfirmRegisterStore: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
-    // ambil AI ViewModel explicit supaya tidak kebingungan dengan HomeViewModel
+
     val aiViewModel: AiPageViewModel = viewModel()
 
     val username by viewModel.username.collectAsState()
@@ -54,7 +56,7 @@ fun HomeScreen(
 
     HomeContent(
         viewModel = aiViewModel,
-        username = username,
+
         isLoading = isLoading,
         stores = stores,
         searchQuery = searchQuery,
@@ -77,7 +79,7 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     viewModel: AiPageViewModel,
-    username: String,
+
     isLoading: Boolean,
     stores: List<StoreItem>,
     searchQuery: String,
@@ -92,11 +94,10 @@ fun HomeContent(
     showRegisterConfirmation: Boolean,
     onDismissRegisterConfirmation: () -> Unit,
     onConfirmRegisterStore: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
 
     var isSearchActive by remember { mutableStateOf(false) }
-    var selectedMenu by remember { mutableStateOf("home") }
+    var selectedMenu by remember { mutableStateOf("ai") }
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -115,8 +116,8 @@ fun HomeContent(
         if (selectedMenu != "home") {
             selectedMenu = "home"
         } else {
-            // BACK bawaan Android (keluar)
-            onLogoutClick() // atau biarkan default jika tidak ingin logout
+
+            onLogoutClick()
         }
     }
 
@@ -141,6 +142,8 @@ fun HomeContent(
             when(selectedMenu) {
                 "home" -> {
                     TopAppBar(
+                        modifier = Modifier.background(Color.White),
+
                         title = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -157,45 +160,68 @@ fun HomeContent(
                                         .clickable { onRegisterClick() }
                                 )
 
-                                // SearchBar (sederhana)
-                                SearchBar(
-                                    query = searchQuery,
-                                    onQueryChange = {
-                                        onSearchQueryChange(it)
-                                        if (!isSearchActive && it.isNotBlank()) isSearchActive = true
-                                    },
-                                    onSearch = { q ->
-                                        onSearchQueryChange(q)
-                                        isSearchActive = false
-                                    },
-                                    active = isSearchActive,
-                                    onActiveChange = { isSearchActive = it },
+
+                                Box(
                                     modifier = Modifier
-                                        .height(250.dp)
-                                        .width(250.dp)
-                                        .clip(RoundedCornerShape(50.dp)),
-                                    placeholder = {
-                                        Text(
-                                            "Cari toko...",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontSize = 14.sp,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                            )
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Search, contentDescription = null, modifier = Modifier.size(25.dp))
-                                    },
-                                    trailingIcon = {
-                                        if (searchQuery.isNotEmpty()) {
-                                            IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(28.dp)) {
-                                                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", modifier = Modifier.size(16.dp))
-                                            }
-                                        }
-                                    }
+                                        .width(200.dp)                         // 🔥 Lebar 200dp
+                                        .height(30.dp)                         // Tinggi 30dp
+                                        .border(1.dp, Color.Black, RoundedCornerShape(50.dp))   // 🔥 Border
+                                        .background(Color.White, RoundedCornerShape(50.dp))     // 🔥 Background
+                                        .padding(horizontal = 12.dp),
+                                    contentAlignment = Alignment.CenterStart
                                 ) {
-                                    // kosong
+
+                                    Row(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        // ICON SEARCH
+                                        Icon(
+                                            imageVector = Icons.Default.Search,
+                                            contentDescription = null,
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(16.dp) // menyesuaikan tinggi 30dp
+                                        )
+
+                                        Spacer(modifier = Modifier.width(6.dp))
+
+                                        // TEXTFIELD
+                                        BasicTextField(
+                                            value = searchQuery,
+                                            onValueChange = {
+                                                onSearchQueryChange(it)
+                                                if (!isSearchActive && it.isNotBlank()) isSearchActive = true
+                                            },
+                                            singleLine = true,
+                                            textStyle = LocalTextStyle.current.copy(
+                                                fontSize = 13.sp,
+                                                lineHeight = 16.sp,
+                                                color = Color.Black
+                                            ),
+                                            decorationBox = { innerTextField ->
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = Alignment.CenterStart
+                                                ) {
+                                                    if (searchQuery.isEmpty()) {
+                                                        Text(
+                                                            "Cari toko...",
+                                                            fontSize = 13.sp,
+                                                            color = Color.Gray
+                                                        )
+                                                    }
+                                                    innerTextField()
+                                                }
+                                            }
+                                            ,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
                                 }
+
+
+
 
                                 Box(
                                     modifier = Modifier
@@ -290,7 +316,7 @@ fun HomeContent(
     }
 }
 
-/** Card placeholder di bawah supaya jelas scoping-nya */
+
 @Composable
 fun HorizontalCardPlaceholder(
     storeName: String,
@@ -331,4 +357,46 @@ fun HorizontalCardPlaceholder(
             }
         }
     }
+}
+
+
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun HomeScreenPreview() {
+    val dataDumy = listOf(
+        StoreItem(
+            id = 1,
+            name = "Barber Premium",
+            address = "Jl. Sudirman No. 10",
+            price = "Rp 25.000",
+            status = "penuh"
+        ),
+        StoreItem(
+            id = 2,
+            name = "Gentlemen Cut",
+            address = "Jl. Merdeka No. 20",
+            price = "Rp 30.000",
+            status = "buka"
+        )
+    )
+
+    val aiViewModel: AiPageViewModel = viewModel()
+    HomeContent(
+        viewModel = aiViewModel,      // dummy VM
+        isLoading = false,
+        stores = dataDumy,
+        searchQuery = "",
+        onSearchQueryChange = {},
+        onProfileClick = {},
+        onDetailClick = {},
+        onLogoutClick = {},
+        onRegisterClick = {},
+        showLogoutDialog = false,
+        onDismissLogoutDialog = {},
+        onConfirmLogout = {},
+        showRegisterConfirmation = false,
+        onDismissRegisterConfirmation = {},
+        onConfirmRegisterStore = {}
+    )
 }

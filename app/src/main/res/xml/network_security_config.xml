@@ -2,7 +2,7 @@
 <network-security-config>
     <!-- Izinkan cleartext ke IP lokal -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.100.111</domain>
+        <domain includeSubdomains="true">192.168.110.222</domain>
     </domain-config>
 
     <!-- Konfigurasi default untuk semua domain lain -->

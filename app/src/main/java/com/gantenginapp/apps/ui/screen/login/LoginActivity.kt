@@ -14,13 +14,10 @@ import com.gantenginapp.apps.ui.screen.home.HomeActivity
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // ✅ Ambil ApiService dari RetrofitClient.instance
         val apiService: ApiService = RetrofitClient.instance
-
         // ✅ Buat instance AuthRepositoryImpl dengan ApiService dari RetrofitClient
         val authRepository = AuthRepositoryImpl(apiService)
-
         // ✅ Buat instance LoginViewModel
         val loginViewModel = LoginViewModel(authRepository, this) // Kirim context
 

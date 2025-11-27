@@ -14,7 +14,6 @@ class AuthRepositoryImpl(
     suspend fun register(request: RegisterRequest): UserResponse {
         return apiService.register(request)
     }
-
     suspend fun getUserById(userId: Int): UserResponse {
         return apiService.getUserById(userId)
     }

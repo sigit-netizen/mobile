@@ -39,6 +39,7 @@ fun RegisterStoreScreen(
     var password by remember { mutableStateOf("") } // ✅ Tambahkan field password
     var passwordVisible by remember { mutableStateOf(false) } // ✅ Tambahkan state visibility password
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -144,7 +145,7 @@ fun RegisterStoreScreen(
             // Tombol Register
             Button(
                 onClick = {
-                    // TODO: Logika daftar toko
+
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

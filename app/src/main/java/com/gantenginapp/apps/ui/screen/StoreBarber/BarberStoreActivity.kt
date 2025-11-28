@@ -34,24 +34,15 @@ class BarberStoreActivity : ComponentActivity() {
             .get(BarberStoreViewModel::class.java)
 
         setContent {
-            val isLoading by viewModel.isRefreshingLoading.collectAsState()
-            val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
-            SwipeRefresh(state = swipeRefreshState,
-                onRefresh = {
-                    viewModel.loadDataStore()
-                },
-                indicatorPadding = PaddingValues(top = 28.dp)
-                ) {
-                BarberDetailScreen(
-                    viewModel = viewModel,
-                    onBackClick = {
-                        val intent = Intent(this@BarberStoreActivity, HomeActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        startActivity(intent)
-                        finish()
-                    }
-                )
-            }
+            BarberDetailScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    val intent = Intent(this@BarberStoreActivity, HomeActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(intent)
+                    finish()
+                }
+            )
         }
     }
 }

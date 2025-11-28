@@ -37,6 +37,9 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.gantenginapp.apps.domain.model.Antrian
 import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreViewModel
+import com.gantenginapp.apps.ui.theme.ColorCustom
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarberDetailScreen(
@@ -52,94 +55,112 @@ fun BarberDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.loadDataStore()
     }
+    val isLoading by viewModel.isRefreshingLoading.collectAsState()
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("${store.storeName}") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) { // ✅ Gunakan callback
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* info */ }) {
-                        Icon(Icons.Default.Info, contentDescription = "Info")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            // Status Barber
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.gantengin),
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, Color.Gray, CircleShape)
+    SwipeRefresh(
+        state = swipeRefreshState,
+        onRefresh = { viewModel.loadDataStore() },
+        indicatorPadding = PaddingValues(top = 28.dp)
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("${store.storeName}") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) { // ✅ Gunakan callback
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* info */ }) {
+                            Icon(Icons.Default.Info, contentDescription = "Info")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = ColorCustom.bg,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.Black,
+                        actionIconContentColor = Color.Black
+                    )
                 )
-
-                Column {
-                    Text(if (store.status == 1)"🟢 Buka" else "🔴 Tutup", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                    Text(store.storeName, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
-                    Text("${store.openingHours} - ${store.closingTime}", color = Color.Gray)
-                }
             }
+        ) { paddingValues ->
 
-            // Tabs
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .background(Color.White)
             ) {
-                listOf("Antrian", "Style", "Lokasi").forEach { tab ->
-                    Box(
+                // Status Barber
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.gantengin),
+                        contentDescription = "Profile Image",
                         modifier = Modifier
-                            .weight(1f)
-                            .clickable { selectedTab = tab }
-                            .background(
-                                if (selectedTab == tab) Color.Black else Color.Transparent,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = if (selectedTab == tab) Color.Black else Color.LightGray,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(tab, fontWeight = FontWeight.Bold, color = if (selectedTab == tab) Color.White else Color.Black)
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color.Gray, CircleShape)
+                    )
+
+                    Column {
+                        Text(if (store.status == 1)"🟢 Buka" else "🔴 Tutup", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                        Text(store.storeName, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                        Text("${store.openingHours} - ${store.closingTime}", color = Color.Gray)
                     }
                 }
+
+                // Tabs
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf("Antrian", "Style", "Lokasi").forEach { tab ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { selectedTab = tab }
+                                .background(
+                                    if (selectedTab == tab) Color.Black else Color.Transparent,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (selectedTab == tab) Color.Black else Color.LightGray,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(tab, fontWeight = FontWeight.Bold, color = if (selectedTab == tab) Color.White else Color.Black)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Konten Berdasarkan Tab
+                when (selectedTab) {
+                    "Antrian" -> AntrianTable(antrianList)
+                    "Style" -> StyleList()
+                    "Lokasi" -> LokasiMap()
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Konten Berdasarkan Tab
-            when (selectedTab) {
-                "Antrian" -> AntrianTable(antrianList)
-                "Style" -> StyleList()
-                "Lokasi" -> LokasiMap()
-            }
         }
+
     }
+
 }
 
 @Composable

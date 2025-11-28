@@ -26,8 +26,9 @@ class BarberStoreViewModel(
 
     fun loadDataStore () {
         viewModelScope.launch {
-            _isRefreashingLoading.value = true
             try {
+                _isRefreashingLoading.value = true
+                delay(3000)
                 val response = storeRepository.getStoreAndOthers(storeId)
                 _store.value = response.store
                 val dataAntrianMapped = response.antrian.map { antrian ->

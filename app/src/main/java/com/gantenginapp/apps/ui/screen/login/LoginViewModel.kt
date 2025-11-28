@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import com.gantenginapp.apps.data.local.UserPreferences
-import com.gantenginapp.apps.domain.model.User
+import com.gantenginapp.apps.data.remote.dto.User
 class LoginViewModel(
     private val authRepository: AuthRepositoryImpl,
     private val context: Context,
@@ -111,7 +111,7 @@ class LoginViewModel(
 
                     val sharedPref = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                     with(sharedPref.edit()) {
-                        putInt("user_id", response.user.id)
+                        putString("user_id", response.user.id)
                         putString("user_role", response.user.role)
                         apply()
                     }
@@ -119,7 +119,7 @@ class LoginViewModel(
                         id = response.user.id.toString(),
                         username = response.user.username.orEmpty(),
                         email = response.user.email.orEmpty(),
-                        noHp = response.user.noHP.orEmpty(),
+                        noHp = response.user.noHp.orEmpty(),
                         role = response.user.role.orEmpty()
                     )
 

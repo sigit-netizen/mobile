@@ -9,10 +9,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+
 data class UserProfile(
-    val id: Int = 0,
+    val id: String ,
     val username: String = "",
-    val noHp: String = "", // ✅ Ganti: phone -> noHp
+    val noHp: String = "",
     val email: String = "",
     val role: String = "",
     val password: String = ""
@@ -22,7 +23,14 @@ class ProfileViewModel(
     private val authRepository: AuthRepositoryImpl
 ) : ViewModel() {
 
-    private val _userProfile = MutableStateFlow(UserProfile())
+    private val _userProfile = MutableStateFlow(UserProfile(
+        id = "",
+        username = "",
+        noHp = "",
+        email = "",
+        role = "",
+        password = ""
+    ))
     val userProfile: StateFlow<UserProfile> = _userProfile
 
     private val _isLoading = MutableStateFlow(false)
@@ -62,7 +70,7 @@ class ProfileViewModel(
     private val _passwordVisible = MutableStateFlow(false)
     val passwordVisible: StateFlow<Boolean> = _passwordVisible
 
-    fun fetchUserProfile(userId: Int) {
+    fun fetchUserProfile(userId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
@@ -72,10 +80,10 @@ class ProfileViewModel(
                     val user = response.user
                     _userProfile.value = UserProfile(
                         id = user.id,
-                        username = user.username,
-                        noHp = user.noHP, // ✅ Ganti: phone = user.noHp
-                        email = user.email,
-                        role = user.role
+                        username = user.username ?: "",
+                        noHp = user.noHp ?: "-",
+                        email = user.email ?: "",
+                        role = user.role ?: ""
                     )
                 } else {
                     _error.value = response.message ?: "Gagal mengambil data pengguna."
@@ -159,11 +167,11 @@ class ProfileViewModel(
         }
     }
 
-    fun deleteAccount(userId: Int) {
+    fun deleteAccount(userId: String) {
         _showDeleteConfirmation.value = true
     }
 
-    fun confirmDeleteAccount(userId: Int) {
+    fun confirmDeleteAccount(userId: String) {
         _showDeleteConfirmation.value = false
         viewModelScope.launch {
             _isLoading.value = true

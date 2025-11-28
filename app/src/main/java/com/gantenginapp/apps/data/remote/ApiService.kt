@@ -21,7 +21,7 @@ interface ApiService {
     ): ApiResponse // ✅ beda dari GET
 
     @DELETE("auth/profile/{id}")
-    suspend fun deleteUser(@Path("id") userId: Int): ApiResponse
+    suspend fun deleteUser(@Path("id") userId: String): ApiResponse
 
     @POST("auth/regist-store")
     suspend fun registerStore(@Body request: RegistStoreReq): ApiResponse

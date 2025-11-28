@@ -27,7 +27,7 @@ import com.gantenginapp.apps.ui.screen.profil.ProfileViewModel.*
 
 @Composable
 fun ProfileScreen(
-    userId: Int,
+    userId: String,
     onBackClick: () -> Unit,
     onEditProfileClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
@@ -368,7 +368,7 @@ fun ProfileItem(icon: ImageVector, text: String) {
 @Composable
 fun PreviewProfile_EditingWithError() {
     val dummy = UserProfile(
-        id = 1,
+        id = "1",
         username = "fi",
         noHp = "123", // ✅ Ganti: phone -> noHp
         email = "invalid-email",

@@ -15,12 +15,12 @@ class AuthRepositoryImpl(
     suspend fun register(request: RegisterRequest): UserResponse {
         return apiService.register(request)
     }
-    suspend fun getUserById(userId: Int): UserResponse {
+    suspend fun getUserById(userId: String): UserResponse {
         return apiService.getUserById(userId)
     }
 
     suspend fun updateUser(
-        userId: Int,
+        userId: String,
         username: String,
         noHp : String,
         email: String,
@@ -35,7 +35,7 @@ class AuthRepositoryImpl(
         return apiService.updateUser(userId, request)
     }
 
-    suspend fun deleteUser(userId: Int): ApiResponse {
+    suspend fun deleteUser(userId: String): ApiResponse {
         return apiService.deleteUser(userId)
     }
 }

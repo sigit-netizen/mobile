@@ -38,13 +38,13 @@ fun LoginScreen(
     val successMessage by viewModel.successMessage.collectAsState()
     val usernameLocalError by viewModel.usernameLocalError.collectAsState()
     val passwordLocalError by viewModel.passwordLocalError.collectAsState()
-    // ✅ Tambahkan state visibility password
+
     val passwordVisible by viewModel.passwordVisible.collectAsState()
 
     LoginScreenContent(
         username = username,
         password = password,
-        passwordVisible = passwordVisible, // ✅ Kirim ke content
+        passwordVisible = passwordVisible,
         usernameLocalError = usernameLocalError,
         passwordLocalError = passwordLocalError,
         errorMessage = errorMessage,
@@ -58,7 +58,7 @@ fun LoginScreen(
             viewModel.onPasswordChange(it)
             viewModel.clearStatus()
         },
-        onTogglePasswordVisibility = { viewModel.togglePasswordVisibility() }, // ✅ Kirim ke content
+        onTogglePasswordVisibility = { viewModel.togglePasswordVisibility() },
         onLoginClick = {
             viewModel.performLogin {
                 onLoginSuccess()

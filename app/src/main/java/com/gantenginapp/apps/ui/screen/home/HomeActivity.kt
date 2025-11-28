@@ -108,8 +108,8 @@ class HomeActivity : ComponentActivity() {
             HomeScreen(
                 onProfileClick = {
                     val sharedPref = getSharedPreferences("user_prefs", MODE_PRIVATE)
-                    val userId = sharedPref.getInt("user_id", -1)
-                    if (userId != -1) {
+                    val userId = sharedPref.getString("user_id", null)
+                    if (userId != null) {
                         val intent = Intent(this@HomeActivity, ProfileActivity::class.java).apply {
                             putExtra("USER_ID", userId)
                         }

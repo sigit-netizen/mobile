@@ -17,8 +17,8 @@ class ProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val userId = intent.getIntExtra("USER_ID", -1)
-        if (userId == -1) {
+        val userId = intent.getStringExtra("USER_ID")
+        if (userId == null) {
             finish()
             return
         }

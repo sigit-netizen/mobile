@@ -3,7 +3,7 @@ package com.gantenginapp.apps.data.remote
 
 import com.gantenginapp.apps.data.remote.dto.*
 import retrofit2.http.*
-
+import com.gantenginapp.apps.domain.model.Store
 interface ApiService {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): UserResponse
@@ -26,4 +26,9 @@ interface ApiService {
     @POST("auth/regist-store")
     suspend fun registerStore(@Body request: RegistStoreReq): ApiResponse
 
+    @GET("stores")
+    suspend fun getAllStore() : StoresResponse
+
+    @GET("stores/{id}")
+    suspend fun getStoreAndOtherById(@Path("id") storeId: Int) : StoreAndOthersResponse
 }

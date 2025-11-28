@@ -38,7 +38,7 @@ import com.gantenginapp.apps.data.repository.UserRepository
 @Composable
 fun HomeScreen(
     onProfileClick: () -> Unit,
-    onDetailClick: () -> Unit,
+    onDetailClick: (Int) -> Unit,
     onLogoutClick: () -> Unit,
     onRegisterClick: () -> Unit,
     onConfirmLogout: () -> Unit,
@@ -85,7 +85,7 @@ fun HomeContent(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onProfileClick: () -> Unit,
-    onDetailClick: () -> Unit,
+    onDetailClick: (Int) -> Unit,
     onLogoutClick: () -> Unit,
     onRegisterClick: () -> Unit,
     showLogoutDialog: Boolean,
@@ -285,11 +285,14 @@ fun HomeContent(
                     ) {
                         items(stores) { store ->
                             HorizontalCardPlaceholder(
+                                id = store.id,
                                 storeName = store.name,
                                 address = store.address,
                                 price = store.price,
                                 status = store.status,
-                                onDetailClick = onDetailClick
+                                onDetailClick = { id ->
+                                    onDetailClick(id)
+                                }
                             )
                         }
                     }
@@ -313,11 +316,12 @@ fun HomeContent(
 
 @Composable
 fun HorizontalCardPlaceholder(
+    id: Int,
     storeName: String,
     address: String,
     price: String,
     status: String,
-    onDetailClick: () -> Unit
+    onDetailClick: (Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -356,9 +360,8 @@ fun HorizontalCardPlaceholder(
                 ) {
                     Text(text = storeName, style = MaterialTheme.typography.titleMedium)
                     when (status) {
-                        "penuh" -> Text("Penuh", color = Color.Red, fontWeight = FontWeight.Bold)
-                        "tutup" -> Text("Tutup", color = Color.Gray, fontWeight = FontWeight.Bold)
-                        else -> Text("- 3 orang", color = Color.Gray)
+                         "tutup" -> Text("Tutup", color = Color.Red, fontWeight = FontWeight.Bold)
+                        else -> Text("Total Antrian : $status", color = Color.Gray)
                     }
                 }
 
@@ -368,7 +371,7 @@ fun HorizontalCardPlaceholder(
                 ) {
                     Text(price)
                     Button(
-                        onClick = onDetailClick,
+                        onClick = { onDetailClick(id) },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.DarkGray,
                             contentColor = Color.White

@@ -13,7 +13,7 @@ import com.gantenginapp.apps.data.remote.dto.User
 import androidx.lifecycle.viewModelScope
 import com.gantenginapp.apps.data.repository.DataRefresher
 import kotlinx.coroutines.flow.asStateFlow
-
+import com.gantenginapp.apps.data.repository.StoreRepository
 data class StoreItem(
     val id: Int,
     val name: String,
@@ -24,7 +24,8 @@ data class StoreItem(
 
 class HomeViewModel (
     private val userRepository: UserRepository,
-    private val dataRefresher: DataRefresher
+    private val dataRefresher: DataRefresher,
+    private val storeRepository : StoreRepository
 ) : ViewModel() {
 
 
@@ -82,19 +83,26 @@ class HomeViewModel (
     fun loadData() {
         viewModelScope.launch {
             _isRefreshingLoading.value = true
-            delay(3000)
-            _allStores.value = listOf(
-                StoreItem(1, "Barber Ananda", "Jl. Merdeka No.1", "Rp.10000", "tersedia"),
-                StoreItem(2, "Tukang Potong Rapi", "Jl. Sudirman", "Rp.15000", "penuh"),
-                StoreItem(3, "Gantengin Barber", "Jl. Gatot Subroto", "Rp.12000", "tutup"),
-                StoreItem(4, "Potong Cepat", "Jl. Diponegoro", "Rp.8000", "tersedia"),
-                StoreItem(5, "Salon Keren", "Jl. Ahmad Yani", "Rp.20000", "tersedia"),
-                StoreItem(6, "Fade Master", "Jl. Veteran", "Rp.18000", "penuh"),
-                StoreItem(7, "Trim & Go", "Jl. Pahlawan", "Rp.9000", "tutup"),
-                StoreItem(8, "Clean Cut", "Jl. Flores", "Rp.11000", "tersedia"),
-                StoreItem(9, "Sharp Line", "Jl. Bali", "Rp.13000", "tersedia"),
-                StoreItem(10, "Edge Barber", "Jl. Sumatra", "Rp.16000", "penuh")
-            )
+            try {
+                val response = storeRepository.getAllStores()
+                delay(3000)
+                val dataMapped = response.data.map {store ->
+                    StoreItem(
+                        id = store.idStore,
+                        name = store.storeName,
+                        address = store.alamat,
+                        price = "Rp.${store.price}",
+                        status = if (store.status == 1) "${store.totalAntrian}" else "tutup"
+                    )
+                }
+
+                _allStores.value = dataMapped
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+
             _isRefreshingLoading.value = false
         }
 

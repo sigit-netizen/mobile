@@ -9,5 +9,5 @@ data class UserResponse(
     @SerializedName("data")
     val user: User?,
     val message: String? = null,
-    val token: String? = null // hanya login yang punya
+    val token: String? = null
 )

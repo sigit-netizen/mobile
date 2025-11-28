@@ -8,7 +8,6 @@ import android.content.Context
 
 class UserRepository(
     private val prefs: UserPreferences,
-
 ) {
     fun getUser(): Flow<User> = prefs.userFlow
 

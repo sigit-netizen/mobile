@@ -21,6 +21,7 @@ import com.gantenginapp.apps.data.repository.UserRepository
 import com.gantenginapp.apps.data.local.UserPreferences
 import com.gantenginapp.apps.data.remote.ApiService
 import com.gantenginapp.apps.data.repository.DataRefresher
+import com.gantenginapp.apps.data.repository.StoreRepository
 import com.gantenginapp.apps.data.remote.RetrofitClient
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -33,11 +34,12 @@ class HomeActivity : ComponentActivity() {
         // 🔥 Buat repository di sini
         val prefs = UserPreferences(this)
         val dataRefresher = DataRefresher(UserRepository(prefs), RetrofitClient.instance)
+        val storeRepository = StoreRepository(RetrofitClient.instance)
 
 
         setContent {
             var showLogoutDialog by remember { mutableStateOf(false) }
-            val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(UserRepository(prefs), dataRefresher))
+            val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(UserRepository(prefs), dataRefresher, storeRepository))
             val user by viewModel.user.collectAsState()
             var showRegisterConfirmation by remember { mutableStateOf(false) }
             var showBackLogoutDialog by remember { mutableStateOf(false) }
@@ -126,7 +128,7 @@ class HomeActivity : ComponentActivity() {
                     onRefresh = {
                     viewModel.loadDataStoreAndUser()
                         viewModel.loadData()
-                                }, indicatorPadding = PaddingValues(top = 16.dp)) {
+                                }, indicatorPadding = PaddingValues(top = 28.dp)) {
                     HomeScreen(
                         onProfileClick = {
                             val sharedPref = getSharedPreferences("user_prefs", MODE_PRIVATE)
@@ -140,8 +142,9 @@ class HomeActivity : ComponentActivity() {
                                 Toast.makeText(this, "User tidak ditemukan", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        onDetailClick = {
+                        onDetailClick = { storeId ->
                             val intent = Intent(this@HomeActivity, BarberStoreActivity::class.java)
+                            intent.putExtra("STORE_ID", storeId)
                             startActivity(intent)
                         },
                         onLogoutClick = { viewModel.showLogoutDialog() },

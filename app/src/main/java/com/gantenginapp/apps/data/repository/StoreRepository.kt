@@ -6,5 +6,13 @@ import com.gantenginapp.apps.data.remote.dto.*
 class StoreRepository(
     private val api: ApiService
 ) {
+    suspend fun getAllStores() : StoresResponse {
+        return api.getAllStore()
+    }
+
+    suspend fun getStoreAndOthers(storeId: Int)  : StoreAndOthersResponse {
+        return api.getStoreAndOtherById(storeId)
+    }
+
     suspend fun registerStore(request: RegistStoreReq) = api.registerStore(request)
 }

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -34,16 +35,28 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.gantenginapp.apps.domain.model.Antrian
+import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarberDetailScreen(
+    viewModel: BarberStoreViewModel,
     onBackClick: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf("Antrian") }
+
+    // Mengambil data store dari view model bray
+    val store by viewModel.store.collectAsState()
+    val antrianList by viewModel.antrian.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDataStore()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Barber Wates") },
+                title = { Text("${store.storeName}") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) { // ✅ Gunakan callback
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -81,9 +94,9 @@ fun BarberDetailScreen(
                 )
 
                 Column {
-                    Text("🟢 Buka", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                    Text("Gantengin Barbershop", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
-                    Text("19:00 - 23:00", color = Color.Gray)
+                    Text(if (store.status == 1)"🟢 Buka" else "🔴 Tutup", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                    Text(store.storeName, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                    Text("${store.openingHours} - ${store.closingTime}", color = Color.Gray)
                 }
             }
 
@@ -121,7 +134,7 @@ fun BarberDetailScreen(
 
             // Konten Berdasarkan Tab
             when (selectedTab) {
-                "Antrian" -> AntrianTable()
+                "Antrian" -> AntrianTable(antrianList)
                 "Style" -> StyleList()
                 "Lokasi" -> LokasiMap()
             }
@@ -130,7 +143,7 @@ fun BarberDetailScreen(
 }
 
 @Composable
-fun AntrianTable() {
+fun AntrianTable(listAntrian: List<Antrian>) {
     val data = listOf(
         Triple("Akbar", "00:30", "Selesai"),
         Triple("Faiz", "01:00", "Proses"),
@@ -164,16 +177,20 @@ fun AntrianTable() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(data) { (nama, durasi, status) ->
+            items(listAntrian) { item ->
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(nama, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
-                    Text(durasi, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
-                    Text(status, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                    Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                    Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                    Text(when (item.status) {
+                        0 -> "Selesai"
+                        1 -> "Proses"
+                        else -> "Antri"
+                    }, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
                 }
             }
         }
@@ -199,7 +216,9 @@ fun StyleList() {
     val styles = listOf("Style 1", "Style 2", "Style 3", "Style 4", "Style 5", "Style 6")
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -261,6 +280,7 @@ fun LokasiMap() {
 @Composable
 fun BarberDetailScreenPreview() {
     BarberDetailScreen(
+        viewModel(),
         onBackClick = { /* Tidak melakukan apa-apa di preview */ })
 }
 
@@ -268,7 +288,26 @@ fun BarberDetailScreenPreview() {
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Antrian")
 @Composable
 fun AntrianTablePreview() {
-    AntrianTable()
+    val dummyList = listOf(
+        Antrian(
+            idAntrian = 1,
+            idStore = 1,
+            customerName = "Akbar",
+            noHp = "081234567890",
+            waktu = "00:30",
+            status = 0
+        ),
+        Antrian(
+            idAntrian = 2,
+            idStore = 1,
+            customerName = "Faiz",
+            noHp = "081234567891",
+            waktu = "01:00",
+            status = 1
+        )
+    )
+
+    AntrianTable(dummyList)
 }
 
 // ✅ Preview untuk tab Style

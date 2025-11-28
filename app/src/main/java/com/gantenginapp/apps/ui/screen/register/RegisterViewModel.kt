@@ -3,8 +3,7 @@ package com.gantenginapp.apps.ui.screen.register
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gantenginapp.apps.data.dto.RegisterRequest
-import com.gantenginapp.apps.data.dto.UserResponse
+import com.gantenginapp.apps.data.remote.dto.*
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

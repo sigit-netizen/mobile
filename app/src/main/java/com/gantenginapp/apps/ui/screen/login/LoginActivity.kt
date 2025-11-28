@@ -10,16 +10,17 @@ import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import com.gantenginapp.apps.ui.screen.register.RegisterActivity
 import com.gantenginapp.apps.R // ✅ Tambahkan ini agar bisa mengakses R.anim
 import com.gantenginapp.apps.ui.screen.home.HomeActivity
-
+import com.gantenginapp.apps.data.local.UserPreferences
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // ✅ Ambil ApiService dari RetrofitClient.instance
+
         val apiService: ApiService = RetrofitClient.instance
         // ✅ Buat instance AuthRepositoryImpl dengan ApiService dari RetrofitClient
         val authRepository = AuthRepositoryImpl(apiService)
         // ✅ Buat instance LoginViewModel
-        val loginViewModel = LoginViewModel(authRepository, this) // Kirim context
+        val prefs = UserPreferences(this)
+        val loginViewModel = LoginViewModel(authRepository, this, prefs) // Kirim context
 
         setContent {
             LoginScreen(

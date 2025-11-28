@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.ui.screen.login.LoginActivity
 import com.gantenginapp.apps.ui.screen.profil.ProfileActivity
-import com.gantenginapp.apps.ui.screen.registerstore.RegisterStoreActivity
+import com.gantenginapp.apps.ui.screen.registstore.RegistStoreActivity
 import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreActivity// ✅ Ganti nama activity
 
 class HomeActivity : ComponentActivity() {
@@ -52,7 +52,7 @@ class HomeActivity : ComponentActivity() {
                 finishAffinity()
             }
 
-            // ✅ Fungsi untuk menampilkan dialog konfirmasi daftar toko
+
             fun showRegisterConfirmationDialog() {
                 showRegisterConfirmation = true
             }
@@ -65,11 +65,11 @@ class HomeActivity : ComponentActivity() {
             // ✅ Fungsi untuk buka RegisterStoreActivity
             fun goToRegisterStore() {
                 showRegisterConfirmation = false // tutup dialog
-                val intent = Intent(this@HomeActivity, RegisterStoreActivity::class.java)
+                val intent = Intent(this@HomeActivity, RegistStoreActivity::class.java)
                 startActivity(intent)
             }
 
-            // ✅ Dialog logout saat back
+
             if (showBackLogoutDialog) {
                 androidx.compose.material3.AlertDialog(
                     onDismissRequest = { showBackLogoutDialog = false },
@@ -114,16 +114,9 @@ class HomeActivity : ComponentActivity() {
                     val intent = Intent(this@HomeActivity, BarberStoreActivity::class.java)
                     startActivity(intent)
                 },
-                onLogoutClick = { viewModel.showLogoutDialog() }, // ✅ Sekarang panggil ViewModel
+                onLogoutClick = { viewModel.showLogoutDialog() },
                 onRegisterClick = {
-                    val sharedPref = getSharedPreferences("user_prefs", MODE_PRIVATE)
-                    val userRole = sharedPref.getString("user_role", "")
-                    if (userRole == "admin") {
-                        val intent = Intent(this@HomeActivity, RegisterStoreActivity::class.java)
-                        startActivity(intent)
-                    } else {
-                        showRegisterConfirmationDialog()
-                    }
+                    showRegisterConfirmationDialog()
                 },
                 onConfirmLogout = {
                     val intent = Intent(this@HomeActivity, LoginActivity::class.java)
@@ -133,7 +126,7 @@ class HomeActivity : ComponentActivity() {
                 showRegisterConfirmation = showRegisterConfirmation,
                 onDismissRegisterConfirmation = { dismissRegisterConfirmation() },
                 onConfirmRegisterStore = { goToRegisterStore() },
-                viewModel = viewModel // ✅ Pastikan dikirim
+                viewModel = viewModel //
             )
         }
     }

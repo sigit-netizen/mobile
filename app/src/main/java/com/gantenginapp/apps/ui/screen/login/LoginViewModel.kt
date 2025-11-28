@@ -5,18 +5,19 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gantenginapp.apps.data.dto.LoginRequest
-import com.gantenginapp.apps.data.dto.UserResponse
+import com.gantenginapp.apps.data.remote.dto.*
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-
+import com.gantenginapp.apps.data.local.UserPreferences
+import com.gantenginapp.apps.domain.model.User
 class LoginViewModel(
     private val authRepository: AuthRepositoryImpl,
-    private val context: Context
+    private val context: Context,
+    private val prefs: UserPreferences
 ) : ViewModel() {
 
     private val _username = MutableStateFlow("")
@@ -111,8 +112,21 @@ class LoginViewModel(
                     val sharedPref = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                     with(sharedPref.edit()) {
                         putInt("user_id", response.user.id)
+                        putString("user_role", response.user.role)
                         apply()
                     }
+                    val user = User(
+                        id = response.user.id.toString(),
+                        username = response.user.username.orEmpty(),
+                        email = response.user.email.orEmpty(),
+                        noHp = response.user.noHP.orEmpty(),
+                        role = response.user.role.orEmpty()
+                    )
+
+
+                    prefs.saveUser(user)
+
+
 
                     onSuccess()
                 } else {

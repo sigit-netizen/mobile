@@ -2,7 +2,6 @@ package com.gantenginapp.apps.ui.screen.aiPage
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,7 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
+
+
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,12 +110,10 @@ private fun ChatList(
     onMessageLongPress: (Message) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier = modifier.padding(horizontal = 12.dp, vertical = 8.dp).background(ColorCustom.bg),
         reverseLayout = false
     ) {
         itemsIndexed(messages) { index, msg ->
-            val alignment = if (msg.isUser) Alignment.End else Alignment.Start
-            val bubbleColor = if (msg.isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
             val textColor =  MaterialTheme.colorScheme.onSurfaceVariant
 
             Row(

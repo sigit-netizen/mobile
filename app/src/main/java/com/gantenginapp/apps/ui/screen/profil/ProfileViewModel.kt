@@ -3,7 +3,7 @@ package com.gantenginapp.apps.ui.screen.profil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gantenginapp.apps.data.dto.UserResponse
+import com.gantenginapp.apps.data.remote.dto.UserResponse
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

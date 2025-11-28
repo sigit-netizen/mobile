@@ -1,50 +1,61 @@
-package com.gantenginapp.apps.ui.screen.registerstore
+package com.gantenginapp.apps.ui.screen.registstore
 
-import android.content.Context
-import android.content.Intent
-import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
-import com.gantenginapp.apps.ui.screen.home.HomeActivity
 import com.gantenginapp.apps.ui.theme.ColorCustom
 
 @Composable
 fun RegisterStoreScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: RegisterStoreViewModel,
+    onRegisterSuccess: () -> Unit
 ) {
     val context = LocalContext.current
+
     var name by remember { mutableStateOf("") }
-    var noHp by remember { mutableStateOf("") }
     var alamatToko by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+
+    // Observe status
+    val isLoading by viewModel.isLoading.collectAsState()
+    val successMsg by viewModel.success.collectAsState()
+    val errorMsg by viewModel.error.collectAsState()
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
+
+    // --- Ketika sukses daftar toko ---
+    LaunchedEffect(successMsg) {
+        if (successMsg != null) {
+            showSuccessDialog = true
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(ColorCustom.bg)
     ) {
-        // Bagian Atas (Logo dan Header)
+
+        // Bagian Atas (Header + Logo)
         Column {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -52,7 +63,6 @@ fun RegisterStoreScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // ✅ Klik back → selalu kembali ke HomeActivity
                 IconButton(onClick = onBackClick) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
@@ -60,8 +70,7 @@ fun RegisterStoreScreen(
             }
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -72,7 +81,7 @@ fun RegisterStoreScreen(
             }
         }
 
-        // Bagian Bawah (Form Register)
+        // Bagian Form
         Column(
             modifier = Modifier
                 .background(
@@ -84,6 +93,7 @@ fun RegisterStoreScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
                 "PENDAFTARAN TOKO",
                 fontSize = 32.sp,
@@ -95,7 +105,7 @@ fun RegisterStoreScreen(
 
             Spacer(Modifier.height(40.dp))
 
-            // Username
+            // Nama Toko
             TextField(
                 value = name,
                 onValueChange = { name = it },
@@ -117,7 +127,6 @@ fun RegisterStoreScreen(
 
             Spacer(Modifier.height(8.dp))
 
-
             // Alamat Toko
             TextField(
                 value = alamatToko,
@@ -138,35 +147,74 @@ fun RegisterStoreScreen(
                 )
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // Tombol Register
+            // Tombol Daftar Toko
             Button(
                 onClick = {
-
+                    viewModel.registerStore(
+                        name = name.trim(),
+                        alamat = alamatToko.trim(),
+                        onSuccess = {} // tidak dipakai lagi
+                    )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ) {
-                Text("Register")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = ColorCustom.bg,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Register")
+                }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
+
+            //
+            if (showSuccessDialog) {
+                AlertDialog(
+                    onDismissRequest = { },
+                    title = { Text("Berhasil Daftar Toko", color = ColorCustom.dark) },
+                    text = { Text("Toko kamu berhasil terdaftar!", color = ColorCustom.black)  },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showSuccessDialog = false
+                                onRegisterSuccess()   // baru balik ke beranda
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    },
+                    containerColor = ColorCustom.bg,
+                    titleContentColor = ColorCustom.bg,
+                    textContentColor = ColorCustom.bg
+                )
+            }
+
+            // Error Message
+            if (errorMsg != null) {
+                Text(
+                    text = errorMsg ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp
+                )
+            }
         }
     }
 }
 
-@Preview(showBackground = true, name = "Register Store - Default")
+@Preview(showBackground = true)
 @Composable
-fun PreviewRegisterStoreScreen_Default() {
-    RegisterStoreScreen(
-        onBackClick = { /* Preview: tidak melakukan apa-apa */ }
-    )
-}
+fun PreviewRegisterStoreScreen() {
 
-@Preview(showBackground = true, name = "Register Store - With Data")
-@Composable
-fun PreviewRegisterStoreScreen_WithData() {
     RegisterStoreScreen(
-        onBackClick = { /* Preview: tidak melakukan apa-apa */ }
+        onBackClick = {},
+        viewModel = viewModel (),
+        onRegisterSuccess = {}
     )
 }

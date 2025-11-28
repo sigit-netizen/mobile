@@ -12,7 +12,7 @@ import com.gantenginapp.apps.data.remote.RetrofitClient
 import com.gantenginapp.apps.data.repository.AuthRepositoryImpl
 import com.gantenginapp.apps.ui.screen.home.HomeActivity
 import com.gantenginapp.apps.ui.screen.login.LoginActivity
-
+import android.content.Context
 class ProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +22,7 @@ class ProfileActivity : ComponentActivity() {
             finish()
             return
         }
+
 
         val apiService = RetrofitClient.instance
         val authRepository = AuthRepositoryImpl(apiService)

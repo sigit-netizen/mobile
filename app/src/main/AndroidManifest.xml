@@ -62,7 +62,7 @@
             android:label="Login" />
 
         <activity
-            android:name="com.gantenginapp.apps.ui.screen.registerstore.RegisterStoreActivity"
+            android:name="com.gantenginapp.apps.ui.screen.registstore.RegistStoreActivity"
             android:exported="true"
             android:label="Login" />
 

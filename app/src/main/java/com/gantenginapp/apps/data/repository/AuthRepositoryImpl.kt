@@ -1,10 +1,11 @@
 
 package com.gantenginapp.apps.data.repository
 
-import com.gantenginapp.apps.data.dto.*
+import com.gantenginapp.apps.data.remote.dto.*
 import com.gantenginapp.apps.data.remote.ApiService
 
 class AuthRepositoryImpl(
+
     private val apiService: ApiService
 ) {
     suspend fun login(request: LoginRequest): UserResponse {

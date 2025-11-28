@@ -1,7 +1,7 @@
 // app/src/main/java/com/gantenginapp/apps/data/remote/ApiService.kt
 package com.gantenginapp.apps.data.remote
 
-import com.gantenginapp.apps.data.dto.*
+import com.gantenginapp.apps.data.remote.dto.*
 import retrofit2.http.*
 
 interface ApiService {
@@ -22,4 +22,8 @@ interface ApiService {
 
     @DELETE("auth/profile/{id}")
     suspend fun deleteUser(@Path("id") userId: Int): ApiResponse
+
+    @POST("auth/regist-store")
+    suspend fun registerStore(@Body request: RegistStoreReq): ApiResponse
+
 }

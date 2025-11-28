@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gantenginapp.apps.R
-import com.gantenginapp.apps.domain.model.User
 import com.gantenginapp.apps.ui.theme.ColorCustom
 
 @Composable

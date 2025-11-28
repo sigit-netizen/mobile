@@ -1,5 +1,5 @@
 // File: app/src/main/java/com/gantenginapp/apps/data/dto/UserResponse.kt
-package com.gantenginapp.apps.data.dto
+package com.gantenginapp.apps.data.remote.dto
 
 import com.google.gson.annotations.SerializedName // Tambahkan import ini
 

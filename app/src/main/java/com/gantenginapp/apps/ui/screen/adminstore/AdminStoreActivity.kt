@@ -1,5 +1,7 @@
 package com.gantenginapp.apps.ui.screen.adminstore
 
+
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,3 +24,4 @@ class AdminStoreActivity : ComponentActivity() {
         }
     }
 }
+

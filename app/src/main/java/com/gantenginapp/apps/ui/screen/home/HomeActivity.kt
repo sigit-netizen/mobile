@@ -17,7 +17,6 @@ import com.gantenginapp.apps.ui.screen.login.LoginActivity
 import com.gantenginapp.apps.ui.screen.profil.ProfileActivity
 import com.gantenginapp.apps.ui.screen.registstore.RegistStoreActivity
 import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreActivity
-import com.gantenginapp.apps.ui.screen.adminstore.AdminStoreActivity
 import com.gantenginapp.apps.data.repository.UserRepository
 import com.gantenginapp.apps.data.local.UserPreferences
 import com.gantenginapp.apps.data.remote.ApiService
@@ -26,7 +25,7 @@ import com.gantenginapp.apps.data.remote.RetrofitClient
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import androidx.compose.ui.unit.dp
-
+import com.gantenginapp.apps.ui.screen.adminstore.AdminStoreActivity
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,7 +86,6 @@ class HomeActivity : ComponentActivity() {
                     val intent = Intent(this@HomeActivity, AdminStoreActivity::class.java)
                     startActivity(intent)
                 } else {
-
                     val intent = Intent(this@HomeActivity, RegistStoreActivity::class.java)
                     startActivity(intent)
                 }

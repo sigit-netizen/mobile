@@ -121,16 +121,16 @@ fun AdminStoreScreen(
 
             // Konten Berdasarkan Tab
             when (selectedTab) {
-                "Antrian" -> AntrianTable()
-                "Style" -> StyleList()
-                "Lokasi" -> LokasiMap()
+                "Antrian" -> AdminAntrianTable()
+                "Style" -> AdminStyleList()
+                "Lokasi" -> AdminLokasiMap()
             }
         }
     }
 }
 
 @Composable
-fun AntrianTable() {
+fun AdminAntrianTable() {
     val data = listOf(
         Triple("Akbar", "00:30", "Selesai"),
         Triple("Faiz", "01:00", "Proses"),
@@ -195,7 +195,7 @@ fun AntrianTable() {
 }
 
 @Composable
-fun StyleList() {
+fun AdminStyleList() {
     val styles = listOf("Style 1", "Style 2", "Style 3", "Style 4", "Style 5", "Style 6")
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -222,7 +222,7 @@ fun StyleList() {
 
 
 @Composable
-fun LokasiMap() {
+fun AdminLokasiMap() {
     val jakarta = LatLng(-6.200000, 106.816666)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(jakarta, 14f)
@@ -259,28 +259,27 @@ fun LokasiMap() {
 // ✅ Preview untuk seluruh screen
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Full Screen")
 @Composable
-fun BarberDetailScreenPreview() {
-    AdminStoreScreen(
-        onBackClick = { /* Tidak melakukan apa-apa di preview */ })
+fun AdminStoreScreenPreview() {
+    AdminStoreScreen(onBackClick = {})
 }
 
 // ✅ Preview untuk tab Antrian
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Antrian")
 @Composable
-fun AntrianTablePreview() {
-    AntrianTable()
+fun AdminAntrianTablePreview() {
+    AdminAntrianTable()
 }
 
 // ✅ Preview untuk tab Style
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Style")
 @Composable
-fun StyleListPreview() {
-    StyleList()
+fun AdminStyleListPreview() {
+    AdminStyleList()
 }
 
 // ✅ Preview untuk tab Lokasi
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Lokasi")
 @Composable
-fun LokasiMapPreview() {
-    LokasiMap()
+fun AdminLokasiMapPreview() {
+    AdminLokasiMap()
 }

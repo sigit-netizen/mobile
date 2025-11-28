@@ -253,7 +253,6 @@ fun HomeContent(
 
         bottomBar = {
             NavigationBar(containerColor = Color.White, contentColor = Color.Black) {
-                Text(text = user?.role ?: "gagal mendapatkan user")
                 NavigationBarItem(
                     selected = selectedMenu == "home",
                     onClick = { selectedMenu = "home" },

@@ -16,7 +16,7 @@ class BarberStoreActivity : ComponentActivity() {
                     val intent = Intent(this@BarberStoreActivity, HomeActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
-                    finish() // ✅ Tutup activity ini agar tidak bisa kembali ke sini
+                    finish()
                 }
             )
         }

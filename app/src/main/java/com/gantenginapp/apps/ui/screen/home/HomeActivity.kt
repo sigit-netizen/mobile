@@ -67,6 +67,7 @@ class HomeActivity : ComponentActivity() {
 
 
             fun showRegisterConfirmationDialog() {
+                println("ROLE SEKARANG: ${user?.role}")
                 if (user?.role == "user") {
                     showRegisterConfirmation = true
                 } else {
@@ -79,7 +80,7 @@ class HomeActivity : ComponentActivity() {
                 showRegisterConfirmation = false
             }
 
-            // ✅ Fungsi untuk buka RegisterStoreActivity
+
             fun goToRegisterStore() {
                 showRegisterConfirmation = false // tutup dialog
                 if (user?.role  == "admin-store") {
@@ -145,8 +146,22 @@ class HomeActivity : ComponentActivity() {
                         },
                         onLogoutClick = { viewModel.showLogoutDialog() },
                         onRegisterClick = {
-                            showRegisterConfirmationDialog()
-                        },
+                            println("ROLE SAAT KLIK: ${user?.role}")
+
+                            when (user?.role) {
+                                "admin-store" -> {
+                                    val intent = Intent(this@HomeActivity, AdminStoreActivity::class.java)
+                                    startActivity(intent)
+                                }
+                                "user" -> {
+                                    showRegisterConfirmation = true
+                                }
+                                else -> {
+                                    Toast.makeText(this, "Role tidak dikenali: ${user?.role}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        ,
                         onConfirmLogout = {
                             val intent = Intent(this@HomeActivity, LoginActivity::class.java)
                             startActivity(intent)

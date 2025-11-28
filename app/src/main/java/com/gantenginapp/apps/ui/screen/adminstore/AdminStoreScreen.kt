@@ -256,12 +256,7 @@ fun AdminLokasiMap() {
         )
     }
 }
-// ✅ Preview untuk seluruh screen
-@Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Full Screen")
-@Composable
-fun AdminStoreScreenPreview() {
-    AdminStoreScreen(onBackClick = {})
-}
+
 
 // ✅ Preview untuk tab Antrian
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Antrian")

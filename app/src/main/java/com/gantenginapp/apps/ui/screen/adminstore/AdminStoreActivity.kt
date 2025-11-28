@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.gantenginapp.apps.ui.screen.home.HomeActivity
-import com.gantenginapp.apps.ui.screen.adminstore.AdminStoreScreen
 
 class AdminStoreActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

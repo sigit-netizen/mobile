@@ -1,4 +1,4 @@
-package com.gantenginapp.apps.ui.screen.StoreBarber
+package com.gantenginapp.apps.ui.screen.adminstore
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,7 +36,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarberDetailScreen(
+fun AdminStoreScreen(
     onBackClick: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf("Antrian") }
@@ -260,7 +260,7 @@ fun LokasiMap() {
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Full Screen")
 @Composable
 fun BarberDetailScreenPreview() {
-    BarberDetailScreen(
+    AdminStoreScreen(
         onBackClick = { /* Tidak melakukan apa-apa di preview */ })
 }
 

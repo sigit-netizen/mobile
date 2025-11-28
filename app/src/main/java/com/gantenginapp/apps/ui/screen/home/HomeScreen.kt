@@ -49,7 +49,6 @@ fun HomeScreen(
 ) {
     val aiViewModel: AiPageViewModel = viewModel()
     val user by viewModel.user.collectAsState()
-
     val isLoading by viewModel.isLoading.collectAsState()
     val stores by viewModel.filteredStores.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()

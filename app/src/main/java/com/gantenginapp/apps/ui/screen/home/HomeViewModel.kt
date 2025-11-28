@@ -12,6 +12,8 @@ import com.gantenginapp.apps.data.repository.UserRepository
 import com.gantenginapp.apps.data.remote.dto.User
 import androidx.lifecycle.viewModelScope
 import com.gantenginapp.apps.data.repository.DataRefresher
+import kotlinx.coroutines.flow.asStateFlow
+
 data class StoreItem(
     val id: Int,
     val name: String,
@@ -21,8 +23,10 @@ data class StoreItem(
 )
 
 class HomeViewModel (
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val dataRefresher: DataRefresher
 ) : ViewModel() {
+
 
     // Ini ngambil data user yang akan kita gunakan untuk seleksi nanti
     private val _user = MutableStateFlow<User?>(null)
@@ -38,6 +42,20 @@ class HomeViewModel (
         }
     }
     //Ini Akhir load user
+
+    // Ini Fitur Refresh
+    private val _isRefreshingLoading = MutableStateFlow(false)
+    val isRefreshingLoading = _isRefreshingLoading.asStateFlow()
+
+    fun loadDataStoreAndUser () {
+        viewModelScope.launch {
+            _isRefreshingLoading.value = true
+            dataRefresher.refreshUser()
+            delay(3000L)
+            loadUser()
+            _isRefreshingLoading.value = false
+        }
+    }
 
 
     private val _username = MutableStateFlow("Ananda")
@@ -61,21 +79,25 @@ class HomeViewModel (
         loadData()
     }
 
-    private fun loadData() {
-        _isLoading.value = true
-        _allStores.value = listOf(
-            StoreItem(1, "Barber Ananda", "Jl. Merdeka No.1", "Rp.10000", "tersedia"),
-            StoreItem(2, "Tukang Potong Rapi", "Jl. Sudirman", "Rp.15000", "penuh"),
-            StoreItem(3, "Gantengin Barber", "Jl. Gatot Subroto", "Rp.12000", "tutup"),
-            StoreItem(4, "Potong Cepat", "Jl. Diponegoro", "Rp.8000", "tersedia"),
-            StoreItem(5, "Salon Keren", "Jl. Ahmad Yani", "Rp.20000", "tersedia"),
-            StoreItem(6, "Fade Master", "Jl. Veteran", "Rp.18000", "penuh"),
-            StoreItem(7, "Trim & Go", "Jl. Pahlawan", "Rp.9000", "tutup"),
-            StoreItem(8, "Clean Cut", "Jl. Flores", "Rp.11000", "tersedia"),
-            StoreItem(9, "Sharp Line", "Jl. Bali", "Rp.13000", "tersedia"),
-            StoreItem(10, "Edge Barber", "Jl. Sumatra", "Rp.16000", "penuh")
-        )
-        _isLoading.value = false
+    fun loadData() {
+        viewModelScope.launch {
+            _isRefreshingLoading.value = true
+            delay(3000)
+            _allStores.value = listOf(
+                StoreItem(1, "Barber Ananda", "Jl. Merdeka No.1", "Rp.10000", "tersedia"),
+                StoreItem(2, "Tukang Potong Rapi", "Jl. Sudirman", "Rp.15000", "penuh"),
+                StoreItem(3, "Gantengin Barber", "Jl. Gatot Subroto", "Rp.12000", "tutup"),
+                StoreItem(4, "Potong Cepat", "Jl. Diponegoro", "Rp.8000", "tersedia"),
+                StoreItem(5, "Salon Keren", "Jl. Ahmad Yani", "Rp.20000", "tersedia"),
+                StoreItem(6, "Fade Master", "Jl. Veteran", "Rp.18000", "penuh"),
+                StoreItem(7, "Trim & Go", "Jl. Pahlawan", "Rp.9000", "tutup"),
+                StoreItem(8, "Clean Cut", "Jl. Flores", "Rp.11000", "tersedia"),
+                StoreItem(9, "Sharp Line", "Jl. Bali", "Rp.13000", "tersedia"),
+                StoreItem(10, "Edge Barber", "Jl. Sumatra", "Rp.16000", "penuh")
+            )
+            _isRefreshingLoading.value = false
+        }
+
     }
 
     fun onSearchQueryChanged(query: String) {

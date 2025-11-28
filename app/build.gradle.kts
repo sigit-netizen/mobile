@@ -79,4 +79,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     // Buat Data Store
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Buat Fitur Refresh
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.28.0")
+
 }

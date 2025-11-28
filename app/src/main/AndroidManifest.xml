@@ -71,6 +71,12 @@
             android:exported="true"
             android:label="Login" />
 
+        <activity
+            android:name="com.gantenginapp.apps.ui.screen.adminstore.AdminStoreActivity"
+            android:exported="true"
+            android:label="Login" />
+
+
 
     </application>
 

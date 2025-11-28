@@ -12,7 +12,7 @@ class DataRefresher (
     private val userRepository: UserRepository,
     private val apiService: ApiService
 ) {
-    fun refreshUser() {
+    suspend fun refreshUser() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val userId = userRepository.getUserId().first()

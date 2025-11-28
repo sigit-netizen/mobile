@@ -2,9 +2,9 @@
 package com.gantenginapp.apps.data.remote.dto
 
 data class User(
-    val id: Int,
+    val id: String,
     val username: String,
-    val role: String,
     val email: String,
-    val noHP: String
+    val noHp : String,
+    val role: String,
 )

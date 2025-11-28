@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.gantenginapp.apps.domain.model.User
+import com.gantenginapp.apps.data.remote.dto.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

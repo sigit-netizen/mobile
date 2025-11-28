@@ -55,7 +55,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     // ✅ Versi terbaru Material3 yang udah support TextFieldDefaults.textFieldColors()
-    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.compose.material3:material3")
+
 
     // Ini untuk icon
     implementation("androidx.compose.material:material-icons-extended:1.5.3")
@@ -76,7 +77,6 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.code.gson:gson:2.10.1")
-
     // Buat Data Store
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

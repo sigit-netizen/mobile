@@ -15,10 +15,18 @@ import com.gantenginapp.apps.ui.screen.login.LoginActivity
 import com.gantenginapp.apps.ui.screen.profil.ProfileActivity
 import com.gantenginapp.apps.ui.screen.registstore.RegistStoreActivity
 import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreActivity// ✅ Ganti nama activity
+import com.gantenginapp.apps.data.repository.UserRepository
+import com.gantenginapp.apps.data.local.UserPreferences
+import com.gantenginapp.apps.data.remote.ApiService
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 🔥 Buat repository di sini
+        val prefs = UserPreferences(this)
+
+
 
         setContent {
             var showLogoutDialog by remember { mutableStateOf(false) }
@@ -95,7 +103,7 @@ class HomeActivity : ComponentActivity() {
                     }
                 )
             }
-                val viewModel: HomeViewModel = viewModel()
+                val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(UserRepository(prefs)))
 
             HomeScreen(
                 onProfileClick = {

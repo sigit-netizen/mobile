@@ -21,7 +21,7 @@ class RegistStoreActivity : ComponentActivity() {
         val prefs = UserPreferences(this)
         val api = RetrofitClient.instance
 
-        val userRepository = UserRepository(prefs, api, this)
+        val userRepository = UserRepository(prefs)
         val storeRepository = StoreRepository(api)
 
         setContent {

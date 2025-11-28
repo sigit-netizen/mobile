@@ -8,7 +8,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.SharingStarted
-
+import com.gantenginapp.apps.data.repository.UserRepository
+import com.gantenginapp.apps.data.remote.dto.User
+import androidx.lifecycle.viewModelScope
+import com.gantenginapp.apps.data.repository.DataRefresher
 data class StoreItem(
     val id: Int,
     val name: String,
@@ -17,7 +20,25 @@ data class StoreItem(
     val status: String
 )
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel (
+    private val userRepository: UserRepository
+) : ViewModel() {
+
+    // Ini ngambil data user yang akan kita gunakan untuk seleksi nanti
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user
+    init {
+        loadUser()
+    }
+    private fun loadUser() {
+        viewModelScope.launch {
+            userRepository.getUser().collect {
+                _user.value = it
+            }
+        }
+    }
+    //Ini Akhir load user
+
 
     private val _username = MutableStateFlow("Ananda")
     val username: StateFlow<String> = _username

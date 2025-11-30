@@ -31,4 +31,8 @@ interface ApiService {
 
     @GET("stores/{id}")
     suspend fun getStoreAndOtherById(@Path("id") storeId: Int) : StoreAndOthersResponse
+
+    @POST("stores/ngantri")
+    suspend fun  ngantri(@Body request: BookingReq) : ApiResponse
+
 }

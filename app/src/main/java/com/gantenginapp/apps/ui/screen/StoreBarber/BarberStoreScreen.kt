@@ -40,6 +40,10 @@ import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreViewModel
 import com.gantenginapp.apps.ui.theme.ColorCustom
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BarberDetailScreen(
@@ -164,64 +168,71 @@ fun BarberDetailScreen(
 }
 
 @Composable
-fun AntrianTable(listAntrian: List<Antrian>) {
-    val data = listOf(
-        Triple("Akbar", "00:30", "Selesai"),
-        Triple("Faiz", "01:00", "Proses"),
-        Triple("Bagas", "01:30", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-        Triple("ananda", "02:00", "Antri"),
-    )
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+fun AntrianTable(
+    listAntrian: List<Antrian>,
+    viewModel: BarberStoreViewModel = viewModel()
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Row(
+
+        Column(
             Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF0F0F0))
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 16.dp)
         ) {
-            Text("Nama", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
-            Text("Durasi", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
-            Text("Status", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
-        }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF0F0F0))
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Nama", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("Durasi", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("Status", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = Color.Black)
+            }
 
-        LazyColumn (
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(listAntrian) { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
-                    Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
-                    Text(when (item.status) {
-                        0 -> "Selesai"
-                        1 -> "Proses"
-                        else -> "Antri"
-                    }, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+            LazyColumn(
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(listAntrian) { item ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                        Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                        Text(
+                            when (item.status) {
+                                0 -> "Selesai"
+                                1 -> "Proses"
+                                else -> "Antri"
+                            },
+                            Modifier.weight(1f),
+                            textAlign = TextAlign.Center,
+                            color = Color.Black
+                        )
+                    }
                 }
             }
         }
 
+
         Button(
-            onClick = { /* Booking logic */ },
+            onClick = { showDialog = true },
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(8.dp),
+                .align(Alignment.BottomEnd)
+                .padding(12.dp),
+            shape = RoundedCornerShape(100.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
                 contentColor = Color.White
@@ -229,8 +240,67 @@ fun AntrianTable(listAntrian: List<Antrian>) {
         ) {
             Text("Booking")
         }
+
+        if (showDialog) {
+            BookingDialog(
+                onDismiss = { showDialog = false },
+                onSubmit = { name, phone ->
+                    viewModel.postAntrian(
+                        customerName = name,
+                        noHp = phone,
+                    )
+                    showDialog = false
+                }
+            )
+        }
     }
 }
+
+@Composable
+fun BookingDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String, String) -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Form Booking") },
+        text = {
+            Column {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nama Pelanggan") }
+                )
+                Spacer(Modifier.height(8.dp))
+
+                TextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Nomor HP") }
+                )
+
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                onSubmit(name, phone)
+            }) {
+                Text("Ngantri")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+
+
 
 @Composable
 fun StyleList() {

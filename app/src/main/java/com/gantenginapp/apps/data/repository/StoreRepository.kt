@@ -14,5 +14,8 @@ class StoreRepository(
         return api.getStoreAndOtherById(storeId)
     }
 
+    suspend fun ngantri(request: BookingReq) : ApiResponse {
+        return api.ngantri(request)
+    }
     suspend fun registerStore(request: RegistStoreReq) = api.registerStore(request)
 }

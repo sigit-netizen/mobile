@@ -86,15 +86,30 @@ class HomeViewModel (
             try {
                 val response = storeRepository.getAllStores()
                 delay(3000)
-                val dataMapped = response.data.map {store ->
-                    StoreItem(
-                        id = store.idStore,
-                        name = store.storeName,
-                        address = store.alamat,
-                        price = "Rp.${store.price}",
-                        status = if (store.status == 1) "${store.totalAntrian}" else "tutup"
-                    )
-                }
+                val dataMapped = response.data
+                    .filter { store ->
+                        listOf(
+                            store.idStore,
+                            store.storeName,
+                            store.alamat,
+                            store.price,
+                            store.status,
+                            store.totalAntrian,
+                            store.openingHours,
+                            store.closingTime,
+                            store.idUser
+                        ).all { it != null }  // <-- kalau ada 1 null, otomatis tidak lolos
+                    }
+                    .map { store ->
+                        StoreItem(
+                            id = store.idStore!!,
+                            name = store.storeName!!,
+                            address = store.alamat!!,
+                            price = "Rp.${store.price!!}",
+                            status = if (store.status == 1) "${store.totalAntrian}" else "tutup"
+                        )
+                    }
+
 
                 _allStores.value = dataMapped
 

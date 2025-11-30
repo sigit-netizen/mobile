@@ -3,26 +3,26 @@ import com.google.gson.annotations.SerializedName
 
 data class Store(
     @SerializedName("id_store")
-    val idStore: Int = 0,
+    val idStore: Int? = null,
 
     @SerializedName("id_user")
-    val idUser: Int = 0,
+    val idUser: Int? = null,
 
     @SerializedName("store_name")
-    val storeName: String = "",
+    val storeName: String? = null,
 
-    val price: Int = 0,
+    val price: Int? = null,
 
-    val alamat: String = "",
+    val alamat: String? = null,
 
     @SerializedName("opening_hours")
-    val openingHours: String = "",
+    val openingHours: String? = null,
 
     @SerializedName("closing_time")
-    val closingTime: String = "",
+    val closingTime: String? = null,
 
     @SerializedName("total_antrian")
-    val totalAntrian: Int = 0,
+    val totalAntrian: Int? = null,
 
-    val status: Int = 0
+    val status: Int? = null
 )

@@ -2,6 +2,7 @@ package com.gantenginapp.apps.data.repository
 
 import com.gantenginapp.apps.data.remote.ApiService
 import com.gantenginapp.apps.data.remote.dto.*
+import retrofit2.Response
 
 class StoreRepository(
     private val api: ApiService
@@ -14,7 +15,7 @@ class StoreRepository(
         return api.getStoreAndOtherById(storeId)
     }
 
-    suspend fun ngantri(request: BookingReq) : ApiResponse {
+    suspend fun ngantri(request: BookingReq) : Response<ApiResponse> {
         return api.ngantri(request)
     }
     suspend fun registerStore(request: RegistStoreReq) = api.registerStore(request)

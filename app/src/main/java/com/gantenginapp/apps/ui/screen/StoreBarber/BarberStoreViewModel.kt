@@ -16,7 +16,7 @@ import java.util.Date
 import java.util.Locale
 import com.gantenginapp.apps.data.repository.UserRepository
 import kotlinx.coroutines.flow.StateFlow
-
+import com.google.gson.Gson
 
 class BarberStoreViewModel(
     private val storeRepository: StoreRepository,
@@ -43,12 +43,19 @@ class BarberStoreViewModel(
         }
     }
 
+    private val _message = MutableStateFlow<String?>(null)
+    val message = _message.asStateFlow()
+
+
 
 
 
     private val _antrian = MutableStateFlow<List<Antrian>>(emptyList())
     val antrian = _antrian.asStateFlow()
 
+    fun clearMessage() {
+        _message.value = null
+    }
 
     fun loadDataStore () {
         viewModelScope.launch {
@@ -96,13 +103,18 @@ class BarberStoreViewModel(
                     waktu = currentTime
                 )
                 val response = storeRepository.ngantri(request)
-                if (response.status) {
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    _message.value = body?.message ?: "Berhasil mengantri"
                     loadDataStore()
                 } else {
-                    println("Gagal Ngantri")
+                    val errorJson = response.errorBody()?.string()
+                    val errorBody = Gson().fromJson(errorJson, ApiResponse::class.java)
+                    _message.value = errorBody.message ?: "Gagal mengantri"
                 }
 
             } catch (e:Exception) {
+                _message.value = "Terjadi kesalahan: ${e.message}"
                 e.printStackTrace()
 
             } finally {

@@ -9,25 +9,27 @@ import androidx.compose.runtime.collectAsState
 import com.gantenginapp.apps.ui.screen.StoreBarber.BarberDetailScreen
 import com.gantenginapp.apps.ui.screen.home.HomeActivity
 import androidx.lifecycle.ViewModelProvider
-import com.gantenginapp.apps.data.repository.StoreRepository
+import com.gantenginapp.apps.data.repository.*
 import com.gantenginapp.apps.data.remote.RetrofitClient
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
-
+import com.gantenginapp.apps.data.local.UserPreferences
 class BarberStoreActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val storeId = intent.getIntExtra("STORE_ID", 0)
+        val prefs = UserPreferences(this)
 
         // Buat repository (sementara manual)
         val storeRepository = StoreRepository(RetrofitClient.instance)
+        val userRepository = UserRepository(prefs)
 
         // Buat factory
-        val factory = BarberStoreViewModelFactory(storeId, storeRepository)
+        val factory = BarberStoreViewModelFactory(storeId, storeRepository, userRepository)
 
         // Ambil viewmodel lewat factory
         val viewModel = ViewModelProvider(this, factory)

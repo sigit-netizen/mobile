@@ -62,12 +62,22 @@ fun BarberDetailScreen(
     val isLoading by viewModel.isRefreshingLoading.collectAsState()
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
 
+    val message by viewModel.message.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(message) {
+        if (message != null) {
+            snackbarHostState.showSnackbar(message!!, withDismissAction = true)
+            viewModel.clearMessage()
+        }
+    }
     SwipeRefresh(
         state = swipeRefreshState,
         onRefresh = { viewModel.loadDataStore() },
         indicatorPadding = PaddingValues(top = 28.dp)
     ) {
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = { Text("${store.storeName}") },
@@ -116,7 +126,7 @@ fun BarberDetailScreen(
 
                     Column {
                         Text(if (store.status == 1)"🟢 Buka" else "🔴 Tutup", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                        Text(store.storeName, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                        Text("${store.storeName}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
                         Text("${store.openingHours} - ${store.closingTime}", color = Color.Gray)
                     }
                 }
@@ -155,7 +165,7 @@ fun BarberDetailScreen(
 
                 // Konten Berdasarkan Tab
                 when (selectedTab) {
-                    "Antrian" -> AntrianTable(antrianList)
+                    "Antrian" -> AntrianTable(antrianList, viewModel)
                     "Style" -> StyleList()
                     "Lokasi" -> LokasiMap()
                 }
@@ -171,7 +181,7 @@ fun BarberDetailScreen(
 
 fun AntrianTable(
     listAntrian: List<Antrian>,
-    viewModel: BarberStoreViewModel = viewModel()
+    viewModel: BarberStoreViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -202,7 +212,7 @@ fun AntrianTable(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(listAntrian) { item ->
+                items(listAntrian.filter { it.status == 0 || it.status == 1 }) { item ->
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -211,12 +221,23 @@ fun AntrianTable(
                     ) {
                         Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
                         Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+
+                        // Mapping status
+                        val statusText = when (item.status) {
+                            0 -> "Menunggu"
+                            1 -> "Proses"
+                            2 -> "Selesai"
+                            else -> "Unknown"
+                        }
+
+                        val statusColor = when (item.status) {
+                            0 -> Color.Gray
+                            1 -> Color(0xFFFFA000) // Kuning proses
+                            2 -> Color(0xFF4CAF50) // Hijau selesai
+                            else -> Color.Black
+                        }
                         Text(
-                            when (item.status) {
-                                0 -> "Selesai"
-                                1 -> "Proses"
-                                else -> "Antri"
-                            },
+                            text = statusText,
                             Modifier.weight(1f),
                             textAlign = TextAlign.Center,
                             color = Color.Black
@@ -264,6 +285,9 @@ fun BookingDialog(
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Form Booking") },
@@ -272,21 +296,54 @@ fun BookingDialog(
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nama Pelanggan") }
+                    label = { Text("Nama Pelanggan") },
+                    isError = nameError != null,
                 )
+                if (nameError != null) {
+                    Text(
+                        nameError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
 
                 TextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("Nomor HP") }
+                    label = { Text("Nomor HP") },
+                    isError = phoneError != null
                 )
+
+                if (phoneError != null) {
+                    Text(
+                        phoneError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
 
             }
         },
         confirmButton = {
             Button(onClick = {
-                onSubmit(name, phone)
+                var valid = true
+
+                if (name.isBlank()) {
+                    nameError = "Nama tidak boleh kosong"
+                    valid = false
+                }
+                if (phone.isBlank()) {
+                    phoneError = "Nomor HP tidak boleh kosong"
+                    valid = false
+                }
+
+                if (valid) {
+                    onSubmit(name, phone)
+                }
+
             }) {
                 Text("Ngantri")
             }
@@ -398,7 +455,7 @@ fun AntrianTablePreview() {
         )
     )
 
-    AntrianTable(dummyList)
+    AntrianTable(dummyList, viewModel())
 }
 
 // ✅ Preview untuk tab Style

@@ -69,7 +69,6 @@ class HomeActivity : ComponentActivity() {
 
 
             fun showRegisterConfirmationDialog() {
-                println("ROLE SEKARANG: ${user?.role}")
                 if (user?.role == "user") {
                     showRegisterConfirmation = true
                 } else {

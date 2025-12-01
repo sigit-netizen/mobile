@@ -240,7 +240,7 @@ fun AntrianTable(
                             text = statusText,
                             Modifier.weight(1f),
                             textAlign = TextAlign.Center,
-                            color = Color.Black
+                            color = statusColor
                         )
                     }
                 }

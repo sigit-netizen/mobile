@@ -24,5 +24,7 @@ data class Store(
     @SerializedName("total_antrian")
     val totalAntrian: Int? = null,
 
+    val durasi : Int? = null,
+
     val status: Int? = null
 )

@@ -66,12 +66,12 @@ class BarberStoreViewModel(
                 _store.value = response.store
                 val dataAntrianMapped = response.antrian.map { antrian ->
                     Antrian(
-                        idAntrian = antrian.idAntrian,
-                        idStore = antrian.idStore,
-                        customerName = antrian.customerName,
-                        noHp = antrian.noHp,
+                        idAntrian = antrian.idAntrian ?: 0,
+                        idStore = antrian.idStore ?: 0,
+                        customerName = antrian.customerName ?: "Kosong",
+                        noHp = antrian.noHp ?: "",
                         waktu = antrian.waktu,
-                        status = antrian.status
+                        status = antrian.status ?: 0
                     )
                 }
 

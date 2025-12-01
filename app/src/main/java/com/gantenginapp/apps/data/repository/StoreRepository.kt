@@ -15,8 +15,17 @@ class StoreRepository(
         return api.getStoreAndOtherById(storeId)
     }
 
+    suspend fun getStoreAdmin(userId: Int) : Response<StoreAndOthersResponse> {
+        return api.getAdminStore(userId)
+    }
+
     suspend fun ngantri(request: BookingReq) : Response<ApiResponse> {
         return api.ngantri(request)
     }
     suspend fun registerStore(request: RegistStoreReq) = api.registerStore(request)
+
+    suspend fun updateStore(storeId: Int, request: StoreUpdateRequest): Response<ApiResponse> {
+        return api.updateStore(storeId, request)
+    }
+
 }

@@ -8,6 +8,8 @@ data class Antrian(
 
     @SerializedName("id_store")
     val idStore: Int = 0,
+    @SerializedName("id_user")
+    val idUser: Int = 0,
 
     @SerializedName("customer_name")
     val customerName: String = "",

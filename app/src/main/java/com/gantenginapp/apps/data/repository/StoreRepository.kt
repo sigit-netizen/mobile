@@ -34,6 +34,10 @@ class StoreRepository(
         return api.generate(storeId, request)
     }
 
+    suspend fun deleteAntrian (idAntrian: Int) = api.deleteAntrian(idAntrian)
+
+    suspend fun batalAntrian (idAntrian: Int) = api.batalAntrian(idAntrian)
+
 
 
 }

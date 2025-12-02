@@ -16,11 +16,8 @@
     import com.gantenginapp.apps.domain.model.Store
     import com.gantenginapp.apps.domain.model.Antrian
     import com.gantenginapp.apps.data.remote.dto.*
-    import org.threeten.bp.LocalTime
-    import org.threeten.bp.format.DateTimeFormatter
-    import android.util.Log
 
-    class AdminStoreViewModel (
+    open class AdminStoreViewModel (
         private val storeRepository: StoreRepository,
         private val userRepository: UserRepository
     ) : ViewModel() {
@@ -120,6 +117,7 @@
                     val dataAntrianMapped: List<Antrian> = response.body()?.antrian
                         ?.map { antrian ->
                             Antrian(
+                                idAntrian = antrian.idAntrian ?: 0,
                                 idStore = antrian.idStore ?: 0,
                                 customerName = antrian.customerName ?: "Kosong",
                                 noHp = antrian.noHp ?: "",
@@ -153,5 +151,28 @@
                 }
             }
         }
+        fun deleteAntrian(idAntrian: Int) {
+            viewModelScope.launch {
+                try {
+                    _isRefreshingLoading.value = true
+
+                    val response = storeRepository.deleteAntrian(idAntrian)
+                    if (response.isSuccessful) {
+                        _message.value = response.body()?.message ?: "Berhasil hapus antrian!"
+                        loadDataAdminStore()
+                    } else {
+                        _message.value = "Gagal hapus: ${response.code()}"
+                    }
+                } catch (e: Exception) {
+                    _message.value = "Error: ${e.message}"
+                } finally {
+                    _isRefreshingLoading.value = false
+                }
+            }
+        }
+
+
+
+
 
     }

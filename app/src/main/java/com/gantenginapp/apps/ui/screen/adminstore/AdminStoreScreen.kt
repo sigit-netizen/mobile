@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +42,14 @@ import com.gantenginapp.apps.domain.model.Antrian
 import com.gantenginapp.apps.ui.screen.StoreBarber.AntrianTable
 import com.gantenginapp.apps.data.remote.dto.StoreUpdateRequest
 import com.gantenginapp.apps.domain.model.Store
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +59,6 @@ fun AdminStoreScreen(
     onBackClick: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf("Antrian") }
-
     val store by viewModel.store.collectAsState()
     val antrianList by viewModel.antrian.collectAsState()
     var isEditing by remember { mutableStateOf(false) }
@@ -82,7 +90,13 @@ fun AdminStoreScreen(
                         IconButton(onClick = { }) {
                             Icon(Icons.Default.Info, contentDescription = "Info")
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White,        // background putih
+                        titleContentColor = Color.Black,     // warna title
+                        navigationIconContentColor = Color.Black,
+                        actionIconContentColor = Color.Black
+                    )
                 )
             }
         ) { paddingValues ->
@@ -110,8 +124,6 @@ fun AdminStoreScreen(
                             .clip(CircleShape)
                             .border(1.dp, Color.Gray, CircleShape)
                     )
-
-
 
                     Spacer(modifier = Modifier.width(24.dp)) // Jarak dari gambar biar nggak mepet
 
@@ -275,7 +287,7 @@ fun AdminAntrianTable(
     viewModel: AdminStoreViewModel
 ) {
     val message by viewModel.message.collectAsState()
-
+    var showDialog by remember { mutableStateOf(false) }
 
     // Kalau kosong → tampilkan message
     if (listAntrian.isEmpty()) {
@@ -319,19 +331,65 @@ fun AdminAntrianTable(
                     Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(item.customerName ?: "", Modifier.weight(1f), textAlign = TextAlign.Center)
                     Text(item.waktu ?: "-", Modifier.weight(1f), textAlign = TextAlign.Center)
-                    Text(
-                        when (item.status ?: 0) {
-                            0 -> "Kosong"
-                            1 -> "Terisi"
-                            else -> "Selesai"
-                        },
-                        Modifier.weight(1f),
-                        textAlign = TextAlign.Center
-                    )
+                    if (item.status != 0 ) {
+                        Box(
+                            Modifier.weight(1f), contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)                         // biar kecil
+                                    .border(2.dp, Color.Gray, RoundedCornerShape(6.dp))
+                                    .clickable { showDialog = true }     // klik = tampil dialog
+                                    .padding(4.dp),                      // ruang dalam
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Selesai",
+                                    tint = if (item.status == 2) Color.Green else Color.Gray,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                             }
+
+                        }
+
+                        // === DIALOG KONFIRMASI ===
+                        if (showDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDialog = false },
+                                title = { Text("Konfirmasi") },
+                                text = { Text("Yakin bookingan ini sudah selesai?") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        viewModel.deleteAntrian(item.idAntrian)
+                                        showDialog = false
+                                    }) {
+                                        Text("Ya, Selesai")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDialog = false }) {
+                                        Text("Batal")
+                                    }
+                                }
+                            )
+                        }
+                        } else {
+                        Text(
+                            when (item.status ?: 0) {
+                                0 -> "Kosong"
+                                1 -> "Terisi"
+                                else -> "Selesai"
+                            },
+                            Modifier.weight(1f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
@@ -405,7 +463,6 @@ fun AdminLokasiMap() {
     }
 }
 
-
 // ✅ Preview untuk tab Antrian
 @Preview(showBackground = true, showSystemUi = true, name = "Barber Detail - Tab Antrian")
 @Composable
@@ -447,7 +504,7 @@ fun AdminLokasiMapPreview() {
 }
 
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditStoreFormPopup(
     store: Store,
@@ -460,15 +517,55 @@ fun EditStoreFormPopup(
     var open by remember { mutableStateOf(store.openingHours ?: "") }
     var close by remember { mutableStateOf(store.closingTime ?: "") }
     var durasi by remember { mutableStateOf(store.durasi?.toString() ?: "") }
+    val filterdStatus = if(store.status == 0)  "tutup" else "buka"
 
+    var expanded by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf(filterdStatus) }
     Column(modifier = Modifier.fillMaxWidth()) {
-
         OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Toko") })
         OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Harga") })
         OutlinedTextField(value = alamat, onValueChange = { alamat = it }, label = { Text("Alamat") })
         OutlinedTextField(value = open, onValueChange = { open = it }, label = { Text("Jam Buka (HH:MM:SS)") })
         OutlinedTextField(value = close, onValueChange = { close = it }, label = { Text("Jam Tutup (HH:MM:SS)") })
         OutlinedTextField(value = durasi, onValueChange = { durasi = it }, label = { Text("Durasi (menit)") })
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextField(
+                value = status,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Status Toko") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("buka") },
+                    onClick = {
+                        status = "buka"
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("tutup") },
+                    onClick = {
+                        status = "tutup"
+                        expanded = false
+                    }
+                )
+            }
+        }
+
 
         Spacer(Modifier.height(12.dp))
 
@@ -487,7 +584,8 @@ fun EditStoreFormPopup(
                         alamat = alamat,
                         openingHours = open,
                         closingTime = close,
-                        durasi = durasi.toIntOrNull() ?: 0
+                        durasi = durasi.toIntOrNull() ?: 0,
+                        status = if (status == "buka") 1 else 0
                     )
                 )
             }) {

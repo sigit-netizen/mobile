@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -46,7 +47,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
-
+import androidx.compose.ui.layout.ContentScale
 
 
 
@@ -203,11 +204,16 @@ fun AntrianTable(
         return String.format("%02d:%02d", hour, minute)
     }
 
+
     var showDialog by remember { mutableStateOf(false) }
+    var showDialogBatal by remember { mutableStateOf(false) }
+
     val filteredAntrian = listAntrian.filter { item ->
         (item.status == 0 || item.status == 1) &&
                 item.waktu > getCurrentTimeString()
     }
+
+    val user by viewModel.user.collectAsState()
 
 
     Box(
@@ -239,7 +245,6 @@ fun AntrianTable(
                 if (filteredAntrian.isEmpty()) {
                     item {
                         Text("belum ada antrian ", modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp), textAlign = TextAlign.Center, color = Color.Gray)
-
                     }
                 } else {
                     items(filteredAntrian) { item ->
@@ -247,31 +252,81 @@ fun AntrianTable(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
                             Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                            if (user?.id?.toIntOrNull() == item.idUser) {
+                                Box(
+                                    Modifier
+                                        .weight(1f)
+                                        .padding(4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
 
-                            // Mapping status
-                            val statusText = when (item.status) {
-                                0 -> "Kosong"
-                                1 -> "Terisi"
-                                2 -> "Selesai"
-                                else -> "Unknown"
+                                    Box(
+                                        modifier = Modifier
+                                            .width(100.dp)
+                                            .size(28.dp)                         // biar kecil
+                                            .clickable { showDialogBatal = true }     // klik = tampil dialog
+                                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                                            .background(Color.Red),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("Batal", color = Color.White)
+                                    }
+
+
+                                }
+
+                                // === DIALOG KONFIRMASI ===
+                                if (showDialogBatal) {
+                                    AlertDialog(
+                                        onDismissRequest = { showDialogBatal = false },
+                                        title = { Text("Konfirmasi") },
+                                        text = { Text("Yakin Batalkan Antrian") },
+                                        confirmButton = {
+                                            TextButton(onClick = {
+                                                viewModel.batalAntrian(item.idAntrian)
+                                                showDialogBatal = false
+                                            }) {
+                                                Text("Ya, Batalkan")
+                                            }
+                                        },
+                                        dismissButton = {
+                                            TextButton(onClick = { showDialogBatal = false }) {
+                                                Text("Batal")
+                                            }
+                                        }
+                                    )
+                                }
+
+                            } else {
+                                // Mapping status
+                                val statusText = when (item.status) {
+                                    0 -> "Kosong"
+                                    1 -> "Terisi"
+                                    2 -> "Selesai"
+                                    else -> "Unknown"
+                                }
+
+                                val statusColor = when (item.status) {
+                                    0 -> Color.Gray
+                                    1 -> Color(0xFFFFA000) // Kuning proses
+                                    2 -> Color(0xFF4CAF50) // Hijau selesai
+                                    else -> Color.Black
+                                }
+                                Text(
+                                    text = statusText,
+                                    Modifier.weight(1f),
+                                    textAlign = TextAlign.Center,
+                                    color = statusColor
+                                )
+
                             }
 
-                            val statusColor = when (item.status) {
-                                0 -> Color.Gray
-                                1 -> Color(0xFFFFA000) // Kuning proses
-                                2 -> Color(0xFF4CAF50) // Hijau selesai
-                                else -> Color.Black
-                            }
-                            Text(
-                                text = statusText,
-                                Modifier.weight(1f),
-                                textAlign = TextAlign.Center,
-                                color = statusColor
-                            )
+
                         }
                     }
 
@@ -438,7 +493,15 @@ fun BookingDialog(
 
 @Composable
 fun StyleList() {
-    val styles = listOf("Style 1", "Style 2", "Style 3", "Style 4", "Style 5", "Style 6")
+    val styles = listOf(
+        R.drawable.rambut_1,
+        R.drawable.rambut_2,
+        R.drawable.rambut_3,
+        R.drawable.rambut_2,
+        R.drawable.rambut_5,
+        R.drawable.rambut_6
+    )
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = Modifier
@@ -447,17 +510,18 @@ fun StyleList() {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(styles) { style ->
+        items(styles) { imageRes ->
             Box(
                 modifier = Modifier
-                    .aspectRatio(1f)
-                    .background(Color(0xFFEFEFEF), RoundedCornerShape(12.dp))
-                    .padding(8.dp)
+                    .aspectRatio(1f) // kotak
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.LightGray)
             ) {
-                Text(
-                    text = style,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }

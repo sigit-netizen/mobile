@@ -53,4 +53,14 @@ interface ApiService {
         @Body request: GenerateSlotRequest
     ): Response<ApiResponse>
 
+    @DELETE("antrian/{id}")
+    suspend fun deleteAntrian(
+        @Path("id") idAntrian: Int
+    ) :Response<ApiResponse>
+
+    @PUT("antrian/{id}")
+    suspend fun batalAntrian(
+        @Path("id") idAntrian: Int
+    ) :Response<ApiResponse>
+
 }

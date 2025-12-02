@@ -6,5 +6,6 @@ data class StoreUpdateRequest(
     val alamat: String,
     val openingHours: String,
     val closingTime: String,
-    val durasi: Int
+    val durasi: Int,
+    val status: Int
 )

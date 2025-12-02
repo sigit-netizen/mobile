@@ -66,6 +66,7 @@ class BarberStoreViewModel(
                 _store.value = response.store
                 val dataAntrianMapped = response.antrian.map { antrian ->
                     Antrian(
+                        idUser = antrian.idUser,
                         idAntrian = antrian.idAntrian ?: 0,
                         idStore = antrian.idStore ?: 0,
                         customerName = antrian.customerName ?: "Kosong",
@@ -123,5 +124,26 @@ class BarberStoreViewModel(
             }
         }
 
+
+
     }
+    fun batalAntrian(idAntrian: Int) {
+        viewModelScope.launch {
+            try {
+                _isRefreashingLoading.value = false
+                val response = storeRepository.batalAntrian(idAntrian)
+                if (response.isSuccessful) {
+                    _message.value = response.body()?.message ?: "Berhasil hapus antrian!"
+                    loadDataStore()
+                } else {
+                    _message.value = "Gagal hapus: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _message.value = "Error: ${e.message}"
+            } finally {
+                _isRefreashingLoading.value = false
+            }
+        }
+    }
+
 }

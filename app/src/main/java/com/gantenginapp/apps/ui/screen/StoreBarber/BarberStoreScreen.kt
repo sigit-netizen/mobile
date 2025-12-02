@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -36,10 +37,16 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.gantenginapp.apps.domain.model.Antrian
-import com.gantenginapp.apps.ui.screen.StoreBarber.BarberStoreViewModel
 import com.gantenginapp.apps.ui.theme.ColorCustom
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+
 
 
 
@@ -82,7 +89,7 @@ fun BarberDetailScreen(
                 TopAppBar(
                     title = { Text("${store.storeName}") },
                     navigationIcon = {
-                        IconButton(onClick = onBackClick) { // ✅ Gunakan callback
+                        IconButton(onClick = onBackClick) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                         }
                     },
@@ -105,9 +112,10 @@ fun BarberDetailScreen(
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(Color.White),
+                horizontalAlignment = Alignment.Start,
+
             ) {
-                // Status Barber
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -124,14 +132,20 @@ fun BarberDetailScreen(
                             .border(1.dp, Color.Gray, CircleShape)
                     )
 
-                    Column {
+                    Spacer(modifier = Modifier.width(30.dp))
+
+
+                    Column (
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.Start
+                    ) {
                         Text(if (store.status == 1)"🟢 Buka" else "🔴 Tutup", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                         Text("${store.storeName}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
                         Text("${store.openingHours} - ${store.closingTime}", color = Color.Gray)
+                        Text("Rp.${store.price ?: "Belum diset"}", color = Color.Gray)
                     }
                 }
 
-                // Tabs
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -163,7 +177,6 @@ fun BarberDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Konten Berdasarkan Tab
                 when (selectedTab) {
                     "Antrian" -> AntrianTable(antrianList, viewModel)
                     "Style" -> StyleList()
@@ -183,14 +196,25 @@ fun AntrianTable(
     listAntrian: List<Antrian>,
     viewModel: BarberStoreViewModel
 ) {
+    fun getCurrentTimeString(): String {
+        val cal = java.util.Calendar.getInstance()
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        val minute = cal.get(java.util.Calendar.MINUTE)
+        return String.format("%02d:%02d", hour, minute)
+    }
+
     var showDialog by remember { mutableStateOf(false) }
+    val filteredAntrian = listAntrian.filter { item ->
+        (item.status == 0 || item.status == 1) &&
+                item.waktu > getCurrentTimeString()
+    }
+
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Column(
             Modifier
                 .fillMaxWidth()
@@ -212,42 +236,49 @@ fun AntrianTable(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(listAntrian.filter { it.status == 0 || it.status == 1 }) { item ->
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
-                        Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                if (filteredAntrian.isEmpty()) {
+                    item {
+                        Text("belum ada antrian ", modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp), textAlign = TextAlign.Center, color = Color.Gray)
 
-                        // Mapping status
-                        val statusText = when (item.status) {
-                            0 -> "Menunggu"
-                            1 -> "Proses"
-                            2 -> "Selesai"
-                            else -> "Unknown"
-                        }
-
-                        val statusColor = when (item.status) {
-                            0 -> Color.Gray
-                            1 -> Color(0xFFFFA000) // Kuning proses
-                            2 -> Color(0xFF4CAF50) // Hijau selesai
-                            else -> Color.Black
-                        }
-                        Text(
-                            text = statusText,
-                            Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            color = statusColor
-                        )
                     }
+                } else {
+                    items(filteredAntrian) { item ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(item.customerName, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+                            Text(item.waktu, Modifier.weight(1f), textAlign = TextAlign.Center, color = Color.Black)
+
+                            // Mapping status
+                            val statusText = when (item.status) {
+                                0 -> "Kosong"
+                                1 -> "Terisi"
+                                2 -> "Selesai"
+                                else -> "Unknown"
+                            }
+
+                            val statusColor = when (item.status) {
+                                0 -> Color.Gray
+                                1 -> Color(0xFFFFA000) // Kuning proses
+                                2 -> Color(0xFF4CAF50) // Hijau selesai
+                                else -> Color.Black
+                            }
+                            Text(
+                                text = statusText,
+                                Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                color = statusColor
+                            )
+                        }
+                    }
+
+
                 }
             }
         }
-
-
         Button(
             onClick = { showDialog = true },
             modifier = Modifier
@@ -265,66 +296,115 @@ fun AntrianTable(
         if (showDialog) {
             BookingDialog(
                 onDismiss = { showDialog = false },
-                onSubmit = { name, phone ->
+                onSubmit = { name, phone ,slot->
                     viewModel.postAntrian(
                         customerName = name,
                         noHp = phone,
+                        slot = slot
                     )
                     showDialog = false
-                }
+                },
+                listAntrian = listAntrian
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingDialog(
+    listAntrian: List<Antrian>,
     onDismiss: () -> Unit,
-    onSubmit: (String, String) -> Unit
+    onSubmit: (String, String, Antrian) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
+    var expanded by remember { mutableStateOf(false) }
+    fun getCurrentTimeString(): String {
+        val cal = java.util.Calendar.getInstance()
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        val minute = cal.get(java.util.Calendar.MINUTE)
+        return String.format("%02d:%02d", hour, minute)
+    }
+
+    val kosongSlots = listAntrian.filter { slot ->
+        slot.status == 0 && slot.waktu > getCurrentTimeString()
+    }
+
+
+    var selectedSlot by remember { mutableStateOf<Antrian?>(null) }
+
     var nameError by remember { mutableStateOf<String?>(null) }
     var phoneError by remember { mutableStateOf<String?>(null) }
+    var slotError by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Form Booking") },
         text = {
             Column {
+
+                // Nama
                 TextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Nama Pelanggan") },
-                    isError = nameError != null,
+                    isError = nameError != null
                 )
-                if (nameError != null) {
-                    Text(
-                        nameError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-                    )
-                }
+                if (nameError != null) Text(nameError!!, color = Color.Red, fontSize = 12.sp)
+
                 Spacer(Modifier.height(8.dp))
 
+                // Nomor HP
                 TextField(
                     value = phone,
                     onValueChange = { phone = it },
                     label = { Text("Nomor HP") },
                     isError = phoneError != null
                 )
+                if (phoneError != null) Text(phoneError!!, color = Color.Red, fontSize = 12.sp)
 
-                if (phoneError != null) {
-                    Text(
-                        phoneError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                Spacer(Modifier.height(8.dp))
+
+
+                // 🔥 Dropdown FIXED
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    TextField(
+                        value = selectedSlot?.waktu ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Pilih Waktu Antrian") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        isError = slotError != null
                     )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        kosongSlots.forEach { slot ->
+                            DropdownMenuItem(
+                                text = { Text(slot.waktu) },
+                                onClick = {
+                                    selectedSlot = slot
+                                    expanded = false
+                                    slotError = null
+                                }
+                            )
+                        }
+                    }
                 }
 
+                if (slotError != null) Text(slotError!!, color = Color.Red, fontSize = 12.sp)
             }
         },
         confirmButton = {
@@ -339,25 +419,22 @@ fun BookingDialog(
                     phoneError = "Nomor HP tidak boleh kosong"
                     valid = false
                 }
-
-                if (valid) {
-                    onSubmit(name, phone)
+                if (selectedSlot == null) {
+                    slotError = "Pilih slot waktu!"
+                    valid = false
                 }
 
-            }) {
-                Text("Ngantri")
-            }
+                if (valid) {
+                    onSubmit(name, phone, selectedSlot!!)
+                }
+
+            }) { Text("Ngantri") }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Batal")
-            }
+            Button(onClick = onDismiss) { Text("Batal") }
         }
     )
 }
-
-
-
 
 @Composable
 fun StyleList() {

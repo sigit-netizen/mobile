@@ -26,5 +26,7 @@ data class Store(
 
     val durasi : Int? = null,
 
-    val status: Int? = null
+    val status: Int? = null,
+
+    val imageUrl: String? = null
 )

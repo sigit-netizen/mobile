@@ -90,8 +90,8 @@ class HomeViewModel (
                             store.storeName,
                             store.alamat,
                             store.price,
-                            store.status,
-                            store.totalAntrian,
+                            store.status ?: 0,
+                            store.totalAntrian ?: 0,
                             store.openingHours,
                             store.closingTime,
                             store.idUser
@@ -106,8 +106,17 @@ class HomeViewModel (
                             status = if (store.status == 1) "${store.totalAntrian}" else "tutup"
                         )
                     }
-
-
+                    .ifEmpty {
+                        listOf(
+                            StoreItem(
+                                id = -1,
+                                name = "Belum ada toko",
+                                address = "",
+                                price = "",
+                                status = ""
+                            )
+                        )
+                    }
                 _allStores.value = dataMapped
 
             } catch (e: Exception) {

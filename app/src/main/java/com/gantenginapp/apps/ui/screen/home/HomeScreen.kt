@@ -275,6 +275,7 @@ fun HomeContent(
         ) {
             when (selectedMenu) {
                 "home" -> {
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -283,16 +284,28 @@ fun HomeContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         items(stores) { store ->
-                            HorizontalCardPlaceholder(
-                                id = store.id,
-                                storeName = store.name,
-                                address = store.address,
-                                price = store.price,
-                                status = store.status,
-                                onDetailClick = { id ->
-                                    onDetailClick(id)
-                                }
-                            )
+                            if (store.id == -1) {
+                                Text(
+                                    "Belum ada toko",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Gray,
+                                    fontSize = 18.sp
+                                )
+                            } else {
+                                HorizontalCardPlaceholder(
+                                    id = store.id,
+                                    storeName = store.name,
+                                    address = store.address,
+                                    price = store.price,
+                                    status = store.status,
+                                    onDetailClick = { id ->
+                                        onDetailClick(id)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -360,7 +373,7 @@ fun HorizontalCardPlaceholder(
                     Text(text = storeName, style = MaterialTheme.typography.titleMedium)
                     when (status) {
                          "tutup" -> Text("Tutup", color = Color.Red, fontWeight = FontWeight.Bold)
-                        else -> Text("Total Antrian : $status", color = Color.Gray)
+                        else -> Text("Antrian Kosong: $status", color = Color.Gray)
                     }
                 }
 

@@ -87,6 +87,7 @@ class BarberStoreViewModel(
     fun postAntrian(
         customerName: String,
         noHp: String,
+        slot: Antrian,
     ) {
         viewModelScope.launch {
             try {
@@ -100,7 +101,7 @@ class BarberStoreViewModel(
                     idUser = user.value?.id.orEmpty(),
                     customerName = customerName,
                     noHp = noHp,
-                    waktu = currentTime
+                    waktu = slot.waktu
                 )
                 val response = storeRepository.ngantri(request)
                 if (response.isSuccessful) {

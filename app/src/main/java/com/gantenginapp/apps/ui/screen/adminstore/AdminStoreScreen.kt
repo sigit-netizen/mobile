@@ -42,6 +42,7 @@ import com.gantenginapp.apps.ui.screen.StoreBarber.AntrianTable
 import com.gantenginapp.apps.data.remote.dto.StoreUpdateRequest
 import com.gantenginapp.apps.domain.model.Store
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminStoreScreen(
@@ -78,7 +79,7 @@ fun AdminStoreScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* info */ }) {
+                        IconButton(onClick = { }) {
                             Icon(Icons.Default.Info, contentDescription = "Info")
                         }
                     }
@@ -109,6 +110,8 @@ fun AdminStoreScreen(
                             .clip(CircleShape)
                             .border(1.dp, Color.Gray, CircleShape)
                     )
+
+
 
                     Spacer(modifier = Modifier.width(24.dp)) // Jarak dari gambar biar nggak mepet
 
@@ -182,7 +185,9 @@ fun AdminStoreScreen(
                                 confirmButton = {
                                     Button(onClick = {
                                         showGenerateDialog = false
-                                        // 🚀 nanti di sini panggil viewModel.generateAntrian(storeId)
+                                        store?.idStore?.let { id ->
+                                            viewModel.generateAntrian(id)
+                                        }
                                     }) {
                                         Text("Konfirmasi")
                                     }
@@ -269,6 +274,8 @@ fun AdminAntrianTable(
     listAntrian: List<Antrian>,
     viewModel: AdminStoreViewModel
 ) {
+    val message by viewModel.message.collectAsState()
+
 
     // Kalau kosong → tampilkan message
     if (listAntrian.isEmpty()) {
@@ -279,13 +286,13 @@ fun AdminAntrianTable(
             contentAlignment = Alignment.TopCenter
         ) {
             Text(
-                text = "Belum ada antrian",
+                text = message ?: "Belum ada antrian",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray
             )
         }
-        return // ⬅ stop di sini, jangan render table
+        return
     }
 
 
@@ -319,7 +326,7 @@ fun AdminAntrianTable(
                     Text(
                         when (item.status ?: 0) {
                             0 -> "Kosong"
-                            1 -> "Proses"
+                            1 -> "Terisi"
                             else -> "Selesai"
                         },
                         Modifier.weight(1f),
@@ -489,3 +496,4 @@ fun EditStoreFormPopup(
         }
     }
 }
+

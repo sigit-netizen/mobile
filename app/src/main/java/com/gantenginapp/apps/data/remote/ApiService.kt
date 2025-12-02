@@ -5,7 +5,8 @@ import com.gantenginapp.apps.data.remote.dto.*
 import retrofit2.http.*
 import com.gantenginapp.apps.domain.model.Store
 import retrofit2.Response
-
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 interface ApiService {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): UserResponse
@@ -44,6 +45,12 @@ interface ApiService {
     suspend fun updateStore(
         @Path("id") storeId: Int,
         @Body request: StoreUpdateRequest
+    ): Response<ApiResponse>
+
+    @POST("stores/{id}/generate")
+    suspend fun generate(
+        @Path("id") storeId: Int,
+        @Body request: GenerateSlotRequest
     ): Response<ApiResponse>
 
 }

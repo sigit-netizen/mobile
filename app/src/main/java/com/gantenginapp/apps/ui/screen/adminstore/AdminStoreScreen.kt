@@ -48,6 +48,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -400,7 +401,15 @@ fun AdminAntrianTable(
 
 @Composable
 fun AdminStyleList() {
-    val styles = listOf("Style 1", "Style 2", "Style 3", "Style 4", "Style 5", "Style 6")
+    val styles = listOf(
+        R.drawable.rambut_1,
+        R.drawable.rambut_2,
+        R.drawable.rambut_3,
+        R.drawable.rambut_2,
+        R.drawable.rambut_5,
+        R.drawable.rambut_6
+    )
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = Modifier
@@ -409,17 +418,18 @@ fun AdminStyleList() {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(styles) { style ->
+        items(styles) { imageRes ->
             Box(
                 modifier = Modifier
-                    .aspectRatio(1f)
-                    .background(Color(0xFFEFEFEF), RoundedCornerShape(12.dp))
-                    .padding(8.dp)
+                    .aspectRatio(1f) // kotak
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.LightGray)
             ) {
-                Text(
-                    text = style,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
